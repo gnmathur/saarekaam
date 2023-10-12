@@ -3,9 +3,8 @@ package com.gnmathur.saarekaam.jobs.testtasks.slowtasks;
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
 import com.gnmathur.saarekaam.core.SKTaskException;
+import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Random;
 
 public class SlowPrintTestTask implements SKTask {
     private static Logger logger = SKLogger.getLogger(SlowPrintTestTask.class);
@@ -21,8 +20,7 @@ public class SlowPrintTestTask implements SKTask {
         }
     }
 
-    @Override
-    public long getPeriodInMs() {
-        return 1000;
+    public SKTaskSchedulingPolicy policy() {
+        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(1000);
     }
 }

@@ -26,62 +26,70 @@ package com.gnmathur.saarekaam.core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.jar.JarFile;
+import java.nio.file.*;
 
 public class SKTaskLoader {
     private static Logger logger = LogManager.getLogger(SKTaskLoader.class);
-    private static SKTaskLoader instance = new SKTaskLoader();
 
     private SKTaskLoader() {}
 
     public static SKTaskLoader getInstance() {
-        return instance;
+        return new SKTaskLoader();
     }
 
     public void loadClassesFromJar(String jarPath) {
-        File jarFile = new File(jarPath);
-        try {
-            JarFile jar = new JarFile(jarFile);
+        logger.info("Loading classes from jar: " + jarPath);
 
-            // Use URL class loader to load classes from jar
-            URL[] urls = {
-                    new URL("jar:file:" + jarPath + "!/")
-            };
-            URLClassLoader cl = URLClassLoader.newInstance(urls);
+        try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), (ClassLoader) null)) {
+            URLClassLoader classLoader = getURLClassLoader(jarPath);
 
-            // Go over all the classes in the jar
-            jar.stream().forEach(jarEntry -> {
-                String className = jarEntry.getName();
-                if (
-                        className.startsWith("com/gnmathur/saarekaam/jobs/SlowPrintSKTask") &&
-                        className.endsWith(".class") &&
-                        className.startsWith("com/gnmathur/saarekaam/jobs")) {
-                    logger.debug(String.format("Found class: %s", className));
-                    className = className.substring(0, className.length() - 6);
-                    className = className.replace('/', '.');
-                    try {
-                        Class<?> klass = Class.forName(className, true, cl);
-                        logger.debug("Loaded class: " + klass.getName());
-                        if (SKTask.class.isAssignableFrom(klass) && !klass.isInterface()) {
-                            logger.info("Instantiating class: " + klass.getName());
-                            SKTask SKTask = (SKTask) klass.newInstance();
-                            SKTaskWrapper SKTaskWrapper = new SKTaskWrapper(SKTask);
-                            SKTaskScheduler.getInstance().schedule(SKTaskWrapper);
-                        }
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    } catch (InstantiationException e) {
-                        throw new RuntimeException(e);
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            Files.walk(fs.getPath("/"))
+                    .filter(this::isMatchingClassPath)
+                    .forEach(path -> processClassPath(path, classLoader));
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private URLClassLoader getURLClassLoader(String jarPath) throws MalformedURLException {
+        URL[] urls = { new URL("jar:file:" + jarPath + "!/") };
+        return URLClassLoader.newInstance(urls);
+    }
+
+    private boolean isMatchingClassPath(Path path) {
+        logger.debug("Checking if path matches: " + path.toString());
+        String className = path.toString().substring(1).replace("/", ".");
+        return className.endsWith(".class") &&
+                className.startsWith("com.gnmathur.saarekaam.jobs");
+    }
+
+    private void processClassPath(Path path, URLClassLoader classLoader) {
+        String className = path.toString().substring(1).replace("/", ".").replace(".class", "");
+        try {
+            Class<?> klass = Class.forName(className, true, classLoader);
+            logger.info("Loaded class: " + klass.getName());
+            instantiateAndSchedule(klass);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void instantiateAndSchedule(Class<?> klass) {
+        try {
+            if (SKTask.class.isAssignableFrom(klass) && !klass.isInterface()) {
+                logger.info("Instantiating class: " + klass.getName());
+                SKTask SKTaskInstance = (SKTask) klass.getDeclaredConstructor().newInstance();
+                SKTaskWrapper SKTaskWrapperInstance = new SKTaskWrapper(SKTaskInstance);
+                SKTaskScheduler.getInstance().schedule(SKTaskWrapperInstance);
+            }
+        } catch (InstantiationException | IllegalAccessException |  NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

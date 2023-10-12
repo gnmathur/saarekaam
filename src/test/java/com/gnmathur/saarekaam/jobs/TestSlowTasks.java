@@ -12,20 +12,20 @@ public class TestSlowTasks {
     @Test
     public void testSlowTasksAreNotOverscheduled() throws InterruptedException {
 
-        SKTaskScheduler scheduler = SKTaskScheduler.getInstance();
-        SlowPrintTestTask slowPrintTestTask = new SlowPrintTestTask();
-        SKTaskWrapper task = new SKTaskWrapper(slowPrintTestTask);
-        scheduler.schedule(task);
+        SKTaskScheduler s = SKTaskScheduler.getInstance();
+        SlowPrintTestTask t = new SlowPrintTestTask();
+        SKTaskWrapper tw = new SKTaskWrapper(t);
+        s.schedule(tw);
 
         int iterationsToTestFor = 8;
-        long taskExpectedToCompleteInMs = slowPrintTestTask.getPeriodInMs() * iterationsToTestFor;
+        long taskExpectedToCompleteInMs = tw.getPeriodInMs() * iterationsToTestFor;
 
         // Wait for the task to complete
         Thread.sleep(taskExpectedToCompleteInMs);
 
-        scheduler.shutdown();
+        s.shutdown();
 
-        assertTrue(task.getTimesCompleted() < taskExpectedToCompleteInMs/slowPrintTestTask.slowTaskTime + 1);
+        assertTrue(tw.getTimesCompleted() < taskExpectedToCompleteInMs/t.slowTaskTime + 1);
     }
 
 }

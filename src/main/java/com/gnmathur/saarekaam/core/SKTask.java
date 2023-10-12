@@ -7,5 +7,5 @@ public interface SKTask {
     void execute() throws SKTaskException;
 
     /* Get the job period in milliseconds */
-    long getPeriodInMs();
+    SKTaskSchedulingPolicy policy();
 }

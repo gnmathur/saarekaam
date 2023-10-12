@@ -3,6 +3,7 @@ package com.gnmathur.saarekaam.jobs.testtasks.simpleprinttest;
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
 import com.gnmathur.saarekaam.core.SKTaskException;
+import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
 public class SimplePrintTestTask implements SKTask {
@@ -17,11 +18,11 @@ public class SimplePrintTestTask implements SKTask {
 
     @Override
     public void execute() throws SKTaskException {
-        logger.info("SimplePrintTestTask" + ident + "executed at: " + System.currentTimeMillis());
+        logger.info("SimplePrintTestTask" + ident + " executed at: " + System.currentTimeMillis());
     }
 
     @Override
-    public long getPeriodInMs() {
-        return periodInMs; // Executes every 2 seconds
+    public SKTaskSchedulingPolicy policy() {
+        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(periodInMs);
     }
 }
