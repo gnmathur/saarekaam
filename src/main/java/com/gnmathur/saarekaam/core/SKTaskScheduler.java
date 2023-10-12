@@ -10,17 +10,16 @@ import static com.gnmathur.saarekaam.core.SKTaskSchedulerPolicy.*;
 
 public class SKTaskScheduler {
     private static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
-    private static final SKTaskScheduler instance = new SKTaskScheduler();
 
     private final ScheduledExecutorService es;
     private LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
 
     public static SKTaskScheduler getInstance() {
-        return instance;
+        return new SKTaskScheduler();
     }
 
     private SKTaskScheduler() {
-        es = Executors.newScheduledThreadPool(10, new SKThreadFactory("task-scheduler-thread"));
+        es = Executors.newScheduledThreadPool(10, new SKThreadFactory("sch-thread"));
     }
 
     public void schedule(SKTaskWrapper SKTaskWrapper) {
@@ -34,13 +33,15 @@ public class SKTaskScheduler {
             return;
         }
 
+        final SKThreadFactory oneShotThreadFactory = new SKThreadFactory("task-thread");
+
         /* Create a runnable for the scheduled task */
         Runnable taskRunnable = () -> {
-            ExecutorService es = Executors.newSingleThreadExecutor(new SKThreadFactory("one-shot-task-thread"));
+            ExecutorService es = Executors.newSingleThreadExecutor(oneShotThreadFactory);
             // Create a job wrapper
-            SKTaskThread SKTaskThread = new SKTaskThread(SKTaskWrapper);
+            SKTaskRunnable SKTaskRunnable = new SKTaskRunnable(SKTaskWrapper);
             // Submit the job
-            Future<?> f = es.submit(SKTaskThread);
+            Future<?> f = es.submit(SKTaskRunnable);
 
             try {
                 f.get(JOB_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);

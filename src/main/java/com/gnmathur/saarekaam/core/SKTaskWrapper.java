@@ -8,17 +8,17 @@ public class SKTaskWrapper {
     SKTaskRunState runState = SKTaskRunState.UNKNOWN;
     private long previousRunTime = System.currentTimeMillis();
     private long timesScheduled = 0;
-    private long timesRun = 0;
+    private long timesCompleted = 0;
     private long timesFailed = 0;
 
     /** Public job API */
     public SKTaskRunState getState() { return runState; }
-    public String getIdent() { return j.getClass().getCanonicalName(); }
+    public String getIdent() { return j.getClass().getSimpleName(); }
     public void setState(SKTaskRunState s) { runState = s; }
     public long getPreviousRunTime() { return previousRunTime; }
     public void setPreviousRunTime(long previousRunTime) { previousRunTime = previousRunTime; }
-    public long getTimesRun() { return timesRun; }
-    public void incTimesRun() { timesRun += 1; }
+    public long getTimesCompleted() { return timesCompleted; }
+    public void incTimesCompleted() { timesCompleted += 1; }
     public long getTimesScheduled() { return timesScheduled; }
     public void incTimesScheduled() { timesScheduled += 1; }
     public long getTimesFailed() { return timesFailed; }

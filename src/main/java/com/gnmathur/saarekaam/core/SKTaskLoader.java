@@ -56,8 +56,10 @@ public class SKTaskLoader {
             // Go over all the classes in the jar
             jar.stream().forEach(jarEntry -> {
                 String className = jarEntry.getName();
-                // check class is not module info
-                if (className.endsWith(".class") && className.startsWith("com/gnmathur/saarekaam/jobs")) {
+                if (
+                        className.startsWith("com/gnmathur/saarekaam/jobs/SlowPrintSKTask") &&
+                        className.endsWith(".class") &&
+                        className.startsWith("com/gnmathur/saarekaam/jobs")) {
                     logger.debug(String.format("Found class: %s", className));
                     className = className.substring(0, className.length() - 6);
                     className = className.replace('/', '.');

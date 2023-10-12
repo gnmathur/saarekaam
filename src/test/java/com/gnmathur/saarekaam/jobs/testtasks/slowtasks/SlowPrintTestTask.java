@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs.slowtasks;
+package com.gnmathur.saarekaam.jobs.testtasks.slowtasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -7,15 +7,15 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
 
-public class SlowPrintTask implements SKTask {
-    private static Logger logger = SKLogger.getLogger(SlowPrintTask.class);
-    private static Random r = new Random();
+public class SlowPrintTestTask implements SKTask {
+    private static Logger logger = SKLogger.getLogger(SlowPrintTestTask.class);
+    public int slowTaskTime = 2_000; // 2 seconds in ms
 
     @Override
     public void execute() throws SKTaskException {
         logger.info("A slow task..");
         try {
-            Thread.sleep(5_000);
+            Thread.sleep(slowTaskTime);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

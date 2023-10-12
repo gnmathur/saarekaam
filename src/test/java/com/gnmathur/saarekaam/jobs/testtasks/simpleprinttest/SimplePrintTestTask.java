@@ -2,11 +2,23 @@ package com.gnmathur.saarekaam.jobs.testtasks.simpleprinttest;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
+import com.gnmathur.saarekaam.core.SKTaskException;
 import org.apache.logging.log4j.Logger;
 
-public abstract class SimplePrintTestTask implements SKTask {
-    protected static Logger logger = SKLogger.getLogger(SimplePrintTestTask1.class);
+public class SimplePrintTestTask implements SKTask {
+    private final Logger logger;
     public long periodInMs = 2000;
+    private int ident;
+
+    public SimplePrintTestTask(int ident) {
+        this.ident = ident;
+        logger = SKLogger.getLogger(SimplePrintTestTask.class + "-" + ident);
+    }
+
+    @Override
+    public void execute() throws SKTaskException {
+        logger.info("SimplePrintTestTask" + ident + "executed at: " + System.currentTimeMillis());
+    }
 
     @Override
     public long getPeriodInMs() {

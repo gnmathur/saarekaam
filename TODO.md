@@ -3,6 +3,7 @@
 * [x] Add Logger
 * [ ] Add a License to all source files
 * [ ] Metrics export to Prometheus
+* [ ] Design for Tasks that have external dependencies
 * [ ] Metrics support to Graphite
 * [ ] Makefiles to build the project or to build the defined jobs
 * [ ] Rest API to get metrics, and to change the configuration

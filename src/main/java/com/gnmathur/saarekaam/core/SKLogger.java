@@ -16,4 +16,8 @@ public class SKLogger {
     public static Logger getLogger(Class<?> clazz) {
         return LogManager.getLogger(clazz);
     }
+
+    public static Logger getLogger(String name) {
+        return LogManager.getLogger(name);
+    }
 }
