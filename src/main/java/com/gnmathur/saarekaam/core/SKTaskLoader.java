@@ -42,7 +42,7 @@ public class SKTaskLoader {
         return new SKTaskLoader();
     }
 
-    public void loadClassesFromJar(String jarPath) {
+    public void loadClassesFromJar(final String jarPath, final SKTaskScheduler ts) {
         logger.info("Loading classes from jar: " + jarPath);
 
         try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), (ClassLoader) null)) {
@@ -50,13 +50,13 @@ public class SKTaskLoader {
 
             Files.walk(fs.getPath("/"))
                     .filter(this::isMatchingClassPath)
-                    .forEach(path -> processClassPath(path, classLoader));
+                    .forEach(path -> processClassPath(path, classLoader, ts));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private URLClassLoader getURLClassLoader(String jarPath) throws MalformedURLException {
+    private URLClassLoader getURLClassLoader(final String jarPath) throws MalformedURLException {
         URL[] urls = { new URL("jar:file:" + jarPath + "!/") };
         return URLClassLoader.newInstance(urls);
     }
@@ -68,24 +68,24 @@ public class SKTaskLoader {
                 className.startsWith("com.gnmathur.saarekaam.jobs");
     }
 
-    private void processClassPath(Path path, URLClassLoader classLoader) {
+    private void processClassPath(final Path path, final URLClassLoader classLoader, final SKTaskScheduler ts) {
         String className = path.toString().substring(1).replace("/", ".").replace(".class", "");
         try {
             Class<?> klass = Class.forName(className, true, classLoader);
             logger.info("Loaded class: " + klass.getName());
-            instantiateAndSchedule(klass);
+            instantiateAndSchedule(klass, ts);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void instantiateAndSchedule(Class<?> klass) {
+    private void instantiateAndSchedule(final Class<?> klass, final SKTaskScheduler ts) {
         try {
             if (SKTask.class.isAssignableFrom(klass) && !klass.isInterface()) {
                 logger.info("Instantiating class: " + klass.getName());
                 SKTask SKTaskInstance = (SKTask) klass.getDeclaredConstructor().newInstance();
                 SKTaskWrapper SKTaskWrapperInstance = new SKTaskWrapper(SKTaskInstance);
-                SKTaskScheduler.getInstance().schedule(SKTaskWrapperInstance);
+                ts.schedule(SKTaskWrapperInstance);
             }
         } catch (InstantiationException | IllegalAccessException |  NoSuchMethodException e) {
             throw new RuntimeException(e);

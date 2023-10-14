@@ -2,24 +2,31 @@ package com.gnmathur.saarekaam;
 
 import com.gnmathur.saarekaam.core.SKTaskLoader;
 import com.gnmathur.saarekaam.core.SKTaskScheduler;
+import io.prometheus.client.exporter.HTTPServer;
+import io.prometheus.client.hotspot.DefaultExports;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static com.gnmathur.saarekaam.core.SKTaskScheduler.*;
+import java.io.IOException;
 
 public class Main {
     public static Logger logger = LogManager.getLogger(Main.class);
-    public static String jarPath = "target/sarekaam-1.0-SNAPSHOT.jar";
+    public static String jarPath = "target/saarekaam-1.0-SNAPSHOT.jar";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        /* Initialize for JMX metrics */
+        DefaultExports.initialize();
+        HTTPServer server = new HTTPServer(8899);
+
         /* Create a new Job Scheduler */
-        SKTaskScheduler SKTaskScheduler = getInstance();
+        SKTaskScheduler ts = SKTaskScheduler.getInstance();
         SKTaskLoader tl = SKTaskLoader.getInstance();
-        tl.loadClassesFromJar(jarPath);
+        tl.loadClassesFromJar(jarPath, ts);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down...");
-            SKTaskScheduler.shutdown();
+            server.close();
+            ts.shutdown();
         }));
     }
 }

@@ -34,7 +34,7 @@ import static com.gnmathur.saarekaam.core.SKSchedulerPolicy.*;
 public class SKTaskScheduler {
     private static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
 
-    private final ScheduledExecutorService es;
+    private final ScheduledExecutorService ses;
     private LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
 
     public static SKTaskScheduler getInstance() {
@@ -42,7 +42,7 @@ public class SKTaskScheduler {
     }
 
     private SKTaskScheduler() {
-        es = Executors.newScheduledThreadPool(10, new SKThreadFactory("sch-thread"));
+        ses = Executors.newScheduledThreadPool(10, new SKThreadFactory("sch-thread"));
     }
 
     public void schedule(SKTaskWrapper SKTaskWrapper) {
@@ -81,7 +81,7 @@ public class SKTaskScheduler {
         logger.info(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
 
         // Schedule the job
-        ScheduledFuture<?> f = es.scheduleAtFixedRate(
+        ScheduledFuture<?> f = ses.scheduleAtFixedRate(
                 taskRunnable,
                 0,
                 SKTaskWrapper.getPeriodInMs(),
@@ -90,16 +90,16 @@ public class SKTaskScheduler {
     }
 
     public void shutdown() {
-        es.shutdown();
+        ses.shutdown();
         logger.info("Shutting down task scheduler. Will wait for all tasks to complete or timeout (60s)");
         try {
-            if (!es.awaitTermination(SHUTDOWN_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)) {
+            if (!ses.awaitTermination(SHUTDOWN_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)) {
                 logger.info("Forcing shutdown...");
-                es.shutdownNow();
+                ses.shutdownNow();
             }
         } catch (InterruptedException e) {
             // Try to shut down again
-            es.shutdownNow();
+            ses.shutdownNow();
             // Preserve interrupt status so that calling code can also see it
             Thread.currentThread().interrupt();
         }
