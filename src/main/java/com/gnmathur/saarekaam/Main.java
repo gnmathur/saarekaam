@@ -12,6 +12,12 @@ public class Main {
     public static String jarPath = "saarekaam-1.0-SNAPSHOT.jar";
 
     public static void main(String[] args) throws IOException {
+        if (args.length != 1) {
+            System.out.println("Usage: java -cp target/<jar> com.gnmathur.saarekaam.Main <jarPath>");
+            System.exit(1);
+        }
+
+        String jarPath = args[0];
         /* Create a new Job Scheduler */
         SKTaskScheduler ts = SKTaskScheduler.getInstance();
         SKTaskLoader tl = SKTaskLoader.getInstance();

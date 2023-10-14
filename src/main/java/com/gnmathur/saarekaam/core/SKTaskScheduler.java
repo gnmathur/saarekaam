@@ -91,7 +91,7 @@ public class SKTaskScheduler {
 
     public void shutdown() {
         ses.shutdown();
-        logger.info("Shutting down task scheduler. Will wait for all tasks to complete or timeout (60s)");
+        logger.info("Shutting down task scheduler. Will wait for all tasks to complete or timeout (30s)");
         try {
             if (!ses.awaitTermination(SHUTDOWN_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)) {
                 logger.info("Forcing shutdown...");
