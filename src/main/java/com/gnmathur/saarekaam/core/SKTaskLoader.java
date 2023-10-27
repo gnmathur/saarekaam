@@ -65,7 +65,7 @@ public class SKTaskLoader {
         logger.debug("Checking if path matches: " + path.toString());
         String className = path.toString().substring(1).replace("/", ".");
         return className.endsWith(".class") &&
-                className.startsWith("com.gnmathur.saarekaam.jobs");
+                className.startsWith("com.gnmathur.saarekaam.tasks.cron");
     }
 
     private void processClassPath(final Path path, final URLClassLoader classLoader, final SKTaskScheduler ts) {

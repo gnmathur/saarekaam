@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs.testtasks.simpleprinttest;
+package com.gnmathur.saarekaam.tasks.testtasks.simpleprinttest;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -23,6 +23,6 @@ public class SimplePrintTestTask implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(periodInMs);
+        return new SKTaskSchedulingPolicy.Periodic(periodInMs);
     }
 }

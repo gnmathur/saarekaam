@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKTask;
 import com.gnmathur.saarekaam.core.SKTaskException;
@@ -17,6 +17,6 @@ public class PrintSKTask implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(5000);
+        return new SKTaskSchedulingPolicy.Periodic(5000);
     }
 }

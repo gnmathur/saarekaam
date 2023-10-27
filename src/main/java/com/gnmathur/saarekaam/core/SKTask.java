@@ -8,4 +8,9 @@ public interface SKTask {
 
     /* Get the job period in milliseconds */
     SKTaskSchedulingPolicy policy();
+
+    /* Get task context */
+    default Object context() {
+        return null;
+    }
 }

@@ -1,7 +1,7 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.*;
-import com.gnmathur.saarekaam.jobs.testtasks.simpleprinttest.*;
+import com.gnmathur.saarekaam.tasks.testtasks.simpleprinttest.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class TestSetOfTasks {
             scheduler.schedule(task);
         }
 
-        Thread.sleep(tasks.get(0).getPeriodInMs() * iterationsToTestFor);
+        Thread.sleep(((SKTaskSchedulingPolicy.Periodic)tasks.get(0).getUnderlyingTask().policy()).period() * iterationsToTestFor);
 
         scheduler.shutdown();
 

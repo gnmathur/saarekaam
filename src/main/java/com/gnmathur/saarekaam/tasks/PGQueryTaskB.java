@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -53,6 +53,6 @@ public class PGQueryTaskB implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(5_000);
+        return new SKTaskSchedulingPolicy.Periodic(5_000);
     }
 }

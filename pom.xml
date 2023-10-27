@@ -52,6 +52,13 @@
             <version>0.16.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.cronutils/cron-utils -->
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>9.2.1</version>
+        </dependency>
+
         <!-- Mockito Core for mock creation, verification and stubbing -->
         <dependency>
             <groupId>org.mockito</groupId>

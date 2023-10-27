@@ -9,7 +9,6 @@ import java.io.IOException;
 
 public class Main {
     public static Logger logger = LogManager.getLogger(Main.class);
-    public static String jarPath = "saarekaam-1.0-SNAPSHOT.jar";
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {

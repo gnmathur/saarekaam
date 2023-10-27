@@ -80,13 +80,37 @@ public class SKTaskScheduler {
 
         logger.info(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
 
-        // Schedule the job
-        ScheduledFuture<?> f = ses.scheduleAtFixedRate(
-                taskRunnable,
-                0,
-                SKTaskWrapper.getPeriodInMs(),
-                TimeUnit.MILLISECONDS);
-        runningJob.put(taskIdent, f);
+        var ut = SKTaskWrapper.getUnderlyingTask();
+        var p = ut.policy();
+
+        if (p instanceof SKTaskSchedulingPolicy.Periodic) {
+            // Schedule the job
+            ScheduledFuture<?> f = ses.scheduleAtFixedRate(
+                    taskRunnable,
+                    0,
+                    ((SKTaskSchedulingPolicy.Periodic) SKTaskWrapper.getUnderlyingTask().policy()).period(),
+                    TimeUnit.MILLISECONDS);
+            runningJob.put(taskIdent, f);
+        } else if (p instanceof SKTaskSchedulingPolicy.Cron) {
+            final Runnable wrapper = new Runnable() {
+                @Override
+                public void run() {
+                    taskRunnable.run();
+                    ses.schedule(
+                            this,
+                            SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
+                            TimeUnit.MILLISECONDS);
+                }
+            };
+
+            final ScheduledFuture<?> f = ses.schedule(
+                    wrapper,
+                    SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
+                    TimeUnit.MILLISECONDS);
+
+
+            runningJob.put(taskIdent, f);
+        }
     }
 
     public void shutdown() {
