@@ -27,35 +27,32 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static com.gnmathur.saarekaam.core.SKSchedulerPolicy.*;
 
-public class SKTaskScheduler {
-    private static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
+public abstract class SKTaskScheduler {
+    protected static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
+    protected LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
+    protected final ScheduledExecutorService ses;
 
-    private final ScheduledExecutorService ses;
-    private LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
-
-    public static SKTaskScheduler getInstance() {
-        return new SKTaskScheduler();
-    }
-
-    private SKTaskScheduler() {
+    /**
+     * Create and initialize a scheduler.
+     * @return The scheduler
+     */
+    public SKTaskScheduler() {
+        logger.info("Initializing task scheduler");
         ses = Executors.newScheduledThreadPool(10, new SKThreadFactory("sch-thread"));
     }
 
-    public void schedule(SKTaskWrapper SKTaskWrapper) {
-        final var taskIdent = SKTaskWrapper.getIdent();
-
-        logger.debug(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
-
-        // check if the job is already running
-        if (runningJob.containsKey(SKTaskWrapper.getClass().getName())) {
-            logger.info(String.format("Task %s is already running", taskIdent));
-            return;
-        }
-
+    /**
+     * Check if the job is already running. If not, return a runnable for the job.
+     *
+     * @param SKTaskWrapper The job wrapper
+     * @return A runnable for the job
+     */
+    protected Runnable createTaskRunnable(SKTaskWrapper SKTaskWrapper) {
         final SKThreadFactory oneShotThreadFactory = new SKThreadFactory("task-thread");
 
         /* Create a runnable for the scheduled task */
@@ -77,45 +74,19 @@ public class SKTaskScheduler {
                 es.shutdown();
             }
         };
-
-        logger.info(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
-
-        var ut = SKTaskWrapper.getUnderlyingTask();
-        var p = ut.policy();
-
-        if (p instanceof SKTaskSchedulingPolicy.Periodic) {
-            // Schedule the job
-            ScheduledFuture<?> f = ses.scheduleAtFixedRate(
-                    taskRunnable,
-                    0,
-                    ((SKTaskSchedulingPolicy.Periodic) SKTaskWrapper.getUnderlyingTask().policy()).period(),
-                    TimeUnit.MILLISECONDS);
-            runningJob.put(taskIdent, f);
-        } else if (p instanceof SKTaskSchedulingPolicy.Cron) {
-            final Runnable wrapper = new Runnable() {
-                @Override
-                public void run() {
-                    taskRunnable.run();
-                    ses.schedule(
-                            this,
-                            SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
-                            TimeUnit.MILLISECONDS);
-                }
-            };
-
-            final ScheduledFuture<?> f = ses.schedule(
-                    wrapper,
-                    SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
-                    TimeUnit.MILLISECONDS);
-
-
-            runningJob.put(taskIdent, f);
-        }
+        return taskRunnable;
     }
 
+    /**
+     * Shutdown the scheduler. This will wait for all tasks to complete or timeout (30s).
+     * If the tasks do not complete in 30s, they will be cancelled.
+     * If the scheduler is already shutdown, this method will do nothing.
+     */
     public void shutdown() {
         ses.shutdown();
+
         logger.info("Shutting down task scheduler. Will wait for all tasks to complete or timeout (30s)");
+
         try {
             if (!ses.awaitTermination(SHUTDOWN_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)) {
                 logger.info("Forcing shutdown...");
@@ -127,6 +98,27 @@ public class SKTaskScheduler {
             // Preserve interrupt status so that calling code can also see it
             Thread.currentThread().interrupt();
         }
-
     }
+
+    public void scheduleIt(SKTaskWrapper SKTaskWrapper) {
+        var taskIdent = SKTaskWrapper.getIdent();
+
+        logger.debug(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
+
+        // check if the job is already running
+        if (runningJob.containsKey(SKTaskWrapper.getClass().getName())) {
+            logger.info(String.format("Task %s is already running", SKTaskWrapper.getIdent()));
+            return;
+        }
+
+        var f = schedule(SKTaskWrapper);
+        runningJob.put(taskIdent, f);
+    }
+
+    /**
+     * Schedule a job.
+     *
+     * @param taskWrapper
+     */
+    public abstract ScheduledFuture schedule(SKTaskWrapper taskWrapper);
 }
