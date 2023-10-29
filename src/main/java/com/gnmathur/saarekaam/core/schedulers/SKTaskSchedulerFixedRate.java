@@ -1,4 +1,7 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.schedulers;
+
+import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.SKTaskWrapper;
 
 import java.util.concurrent.*;
 
@@ -12,7 +15,7 @@ public class SKTaskSchedulerFixedRate extends SKTaskScheduler {
         var p = ut.policy();
 
         // Schedule the job
-        ScheduledFuture<?> f = ses.scheduleAtFixedRate(
+        ScheduledFuture<?> f = ste.scheduleAtFixedRate(
                 taskRunnable,
                 0,
                 ((SKTaskSchedulingPolicy.Periodic) SKTaskWrapper.getUnderlyingTask().policy()).period(),

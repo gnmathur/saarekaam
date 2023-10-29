@@ -63,9 +63,10 @@ public class SKTaskLoader {
 
     private boolean isMatchingClassPath(Path path) {
         logger.debug("Checking if path matches: " + path.toString());
+
         String className = path.toString().substring(1).replace("/", ".");
         return className.endsWith(".class") &&
-                className.startsWith("com.gnmathur.saarekaam.tasks.cron");
+                className.startsWith("com.gnmathur.saarekaam.tasks");
     }
 
     private void processClassPath(final Path path, final URLClassLoader classLoader, final SKTaskDispatcher td) {
@@ -80,6 +81,13 @@ public class SKTaskLoader {
     }
 
     private void instantiateAndSchedule(final Class<?> klass, final SKTaskDispatcher td) {
+        logger.debug("Checking {} is assignable from {} ({}) and is it an interface {} ({})",
+                klass.getName(),
+                SKTask.class.getName(),
+                SKTask.class.isAssignableFrom(klass),
+                klass.isInterface(),
+                !klass.isInterface());
+
         try {
             if (SKTask.class.isAssignableFrom(klass) && !klass.isInterface()) {
                 logger.info("Instantiating class: " + klass.getName());
@@ -87,10 +95,11 @@ public class SKTaskLoader {
                 SKTaskWrapper SKTaskWrapperInstance = new SKTaskWrapper(SKTaskInstance);
                 td.dispatch(SKTaskWrapperInstance);
             }
-        } catch (InstantiationException | IllegalAccessException |  NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+        } catch (InstantiationException |
+                 IllegalAccessException |
+                 NoSuchMethodException |
+                 InvocationTargetException e) {
+            logger.error("Error instantiating class: " + klass.getName() + " (" + e.getMessage() + ")");
         }
     }
 }

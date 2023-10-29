@@ -1,4 +1,8 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.schedulers;
+
+import com.gnmathur.saarekaam.core.SKCron;
+import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.SKTaskWrapper;
 
 import java.util.concurrent.*;
 
@@ -15,14 +19,14 @@ public class SKTaskSchedulerCron extends SKTaskScheduler {
             @Override
             public void run() {
                 taskRunnable.run();
-                ses.schedule(
+                ste.schedule(
                         this,
                         SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
                         TimeUnit.MILLISECONDS);
             }
         };
 
-        final ScheduledFuture<?> f = ses.schedule(
+        final ScheduledFuture<?> f = ste.schedule(
                 rescheduleWrapper,
                 SKCron.getNextExecutionTime(((SKTaskSchedulingPolicy.Cron) p).cronExpression()),
                 TimeUnit.MILLISECONDS);

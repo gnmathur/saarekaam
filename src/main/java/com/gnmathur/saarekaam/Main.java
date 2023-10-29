@@ -25,7 +25,6 @@ package com.gnmathur.saarekaam;
 
 import com.gnmathur.saarekaam.core.SKTaskDispatcher;
 import com.gnmathur.saarekaam.core.SKTaskLoader;
-import com.gnmathur.saarekaam.core.SKTaskScheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

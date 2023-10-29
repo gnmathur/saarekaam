@@ -25,6 +25,9 @@ package com.gnmathur.saarekaam.core;
 
 import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy.Cron;
 import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy.Periodic;
+import com.gnmathur.saarekaam.core.schedulers.SKTaskScheduler;
+import com.gnmathur.saarekaam.core.schedulers.SKTaskSchedulerCron;
+import com.gnmathur.saarekaam.core.schedulers.SKTaskSchedulerFixedRate;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
@@ -50,7 +53,9 @@ public class SKTaskDispatcher {
         if (scheduler != null) {
             scheduler.scheduleIt(taskWrapper);
         } else {
-            throw new IllegalArgumentException("No scheduler available for task type: " + task.getClass());
+            logger.error("No scheduler available for task type: " + task.getClass() +
+                    " with policy: " + task.policy().getClass() +
+                    ". Skipping task.");
         }
     }
 

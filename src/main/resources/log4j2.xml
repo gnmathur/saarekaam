@@ -7,7 +7,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="${sys:logLevel:-INFO}">
             <AppenderRef ref="Console" />
         </Root>
     </Loggers>

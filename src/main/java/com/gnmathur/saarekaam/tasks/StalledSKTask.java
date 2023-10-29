@@ -22,6 +22,6 @@ public class StalledSKTask implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.Periodic(5000);
+        return new SKTaskSchedulingPolicy.Periodic(120_000);
     }
 }
