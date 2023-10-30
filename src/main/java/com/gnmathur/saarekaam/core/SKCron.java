@@ -32,6 +32,12 @@ import org.apache.logging.log4j.Logger;
 public class SKCron {
     private static final Logger logger = SKLogger.getLogger(SKCron.class);
 
+    /**
+     * Returns the next execution time for the given cron expression.
+     *
+     * @param cronExpression The cron expression
+     * @return The next execution time in milliseconds
+     */
     public static long getNextExecutionTime(String cronExpression) {
         var cd = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
         var cp = new CronParser(cd);

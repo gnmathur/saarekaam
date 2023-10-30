@@ -6,6 +6,9 @@ import com.gnmathur.saarekaam.core.SKTaskException;
 import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
 
 public class PGQueryTaskB implements SKTask {
@@ -18,11 +21,12 @@ public class PGQueryTaskB implements SKTask {
         String password = "postgres";
 
         Connection connection = null;
+        PrintWriter writer = null;
 
         try {
             connection = DriverManager.getConnection(jdbcUrl, username, password);
 
-            String sqlQuery = "SELECT title, length, "
+            final String sqlQuery = "SELECT title, length, "
                     + "CASE "
                     + "WHEN length <= 60 THEN 'short' "
                     + "WHEN length > 60 AND length <= 120 THEN 'long' "
@@ -30,23 +34,31 @@ public class PGQueryTaskB implements SKTask {
                     + "ELSE 'unknown' "
                     + "END AS length_description "
                     + "FROM film;";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlQuery);
+            final Statement statement = connection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(sqlQuery);
+            long rowsReturned = 0;
+
+            writer = new PrintWriter(new FileWriter("/tmp/PGQueryTaskB.out", false));
 
             while (resultSet.next()) {
                 String title = resultSet.getString("title");
                 int length = resultSet.getInt("length");
                 String lengthDescription = resultSet.getString("length_description");
-                logger.info("Title: " + title + ", Length: " + length + ", Length Description: " + lengthDescription);
+                writer.println("Title: " + title + ", Length: " + length + ", Length Description: " + lengthDescription);
+                rowsReturned++;
             }
+            logger.info("Wrote " + rowsReturned + " rows to the file");
 
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (connection != null) { connection.close(); }
+                if (writer != null) { writer.close(); }
             } catch (SQLException e) { e.printStackTrace(); }
         }
     }

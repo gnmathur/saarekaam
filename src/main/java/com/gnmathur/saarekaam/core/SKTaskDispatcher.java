@@ -33,6 +33,14 @@ import org.apache.logging.log4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <p>
+ *     This class is responsible for dispatching tasks to the appropriate scheduler. Task types are handled by
+ *     specific schedulers.
+ *
+ *     Note: In the future we may consider creating singleton instances of the schedulers and registering them with
+ *     more than one Task types.
+ */
 public class SKTaskDispatcher {
     private static final Logger logger = SKLogger.getLogger(SKTaskDispatcher.class);
 

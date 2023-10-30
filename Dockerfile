@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jre
 
-LABEL maintainer="Gaurav Mathur <gaurav.mathur@outlook.com>"
+LABEL maintainer="Gaurav Mathur <gaurav.mathur@ymail.com>"
 LABEL version="0.1"
 LABEL description="SaareKaam"
 

@@ -34,18 +34,31 @@ import static com.gnmathur.saarekaam.core.SKSchedulerPolicy.*;
 
 /**
  * <p>
- *     This abstract class is the base class for all task schedulers. It provides the
- *     basic functionality for scheduling tasks. The actual scheduling is done by the
- *     concrete implementations of this class. Different Task schedulers can be used
- *     for different types of tasks. Task schedulers are registered with the dispatcher
+ *     This abstract class is the base class for all task schedulers. It provides the basic functionality for scheduling
+ *     tasks. The actual scheduling is done by the concrete implementations of this class. Different Task schedulers can
+ *     be used for different types of tasks. Task schedulers are registered with the dispatcher
  *     <code>{@link SKTaskDispatcher}</code> at startup.
  *
- *     The scheduler uses a <code>{@link ScheduledExecutorService}</code> to schedule
- *     tasks. The actual task implementation is wrapped in an implementation that creates
- *     another underlying thread. That thread lifecycles is managed by the second executor
- *     that this module defines. This approach of wrapping the task in two layers makes it
- *     possible to cancel the task if it is taking too long to complete.
+ *     The scheduler uses <code>{@link ScheduledExecutorService}</code> to schedule tasks. The actual task
+ *     implementation creates an underlying thread. That thread lifecycles is managed by a second executor
+ *     <code>{@link Executors}</code>, that uses a cached thread pool. This approach of wrapping the task in two layers
+ *     makes it possible to cancel the (inner) task if it is taking too long to complete.
+ *
+ *      The scheduler uses a <code>{@link LinkedHashMap}</code> to keep track of the running jobs. The scheduler
+ *      will not schedule a job if it is already running. This prevents the scheduler from scheduling the same job
+ *      multiple times.
+ *
+ *      The implementation chose the Cached Thread Pool over the Fixed Thread Pool because the cached thread pool
+ *      is suitable for short-lived asynchronous tasks, which is what would typically need for tasks. Since the
+ *      Cached Thread Pool expires threads after 60s of inactivity, the implementation will result in threads being
+ *      created and destroyed, though its expected to be minimal.
+ *
+ * </p>
+ *
  * @see SKTaskDispatcher
+ * @see Executors#newScheduledThreadPool(int, ThreadFactory)
+ * @see Executors#newCachedThreadPool(ThreadFactory)
+ *
  * @author Gaurav Mathur
  */
 public abstract class SKTaskScheduler {
@@ -63,12 +76,12 @@ public abstract class SKTaskScheduler {
 
         // Chose a scheduled thread pool for the scheduler. This is the core executor for managing the feature
         // of periodic tasks.
-        ste = Executors.newScheduledThreadPool(MAX_CONCURRENT_JOBS, new SKThreadFactory("sch-thread"));
+        ste = Executors.newScheduledThreadPool(MAX_CONCURRENT_JOBS, new SKThreadFactory("sthread"));
         // Chose a cached thread pool for the cancelable task executor. This executor will be used to create another
         // thread when the task gets scheduled to run. The advantage of this thread-in-a-thread approach is that
         // the scheduler can now cancel the task if it is taking too long to complete. This will prevent the scheduler
         // from getting blocked
-        cte = Executors.newCachedThreadPool(new SKThreadFactory("cancelable-task"));
+        cte = Executors.newCachedThreadPool(new SKThreadFactory("cthread"));
     }
 
     /**
@@ -132,6 +145,11 @@ public abstract class SKTaskScheduler {
         }
     }
 
+    /**
+     * Add a task to the scheduler
+     *
+     * @param SKTaskWrapper The task wrapper
+     */
     public void scheduleIt(SKTaskWrapper SKTaskWrapper) {
         var taskIdent = SKTaskWrapper.getIdent();
 
@@ -148,7 +166,7 @@ public abstract class SKTaskScheduler {
     }
 
     /**
-     * Schedule a job.
+     * There are different types of schedulers. Each scheduler will have its own implementation of this method.
      *
      * @param taskWrapper
      */
