@@ -23,9 +23,13 @@ SOFTWARE.
 */
 package com.gnmathur.saarekaam.core;
 
+/**
+ * A wrapper for SKTask that holds the state of the task. This is used by the scheduler to keep track of the task.
+ */
 public class SKTaskWrapper {
-    private final SKTask j;
-    public SKTaskWrapper(SKTask j) { this.j = j; }
+    private final SKTask underlyingTask;
+
+    public SKTaskWrapper(SKTask underlyingTask) { this.underlyingTask = underlyingTask; }
 
     /** Private job state */
     SKTaskRunState runState = SKTaskRunState.UNKNOWN;
@@ -35,25 +39,34 @@ public class SKTaskWrapper {
     private long timesFailed = 0;
 
     /** Public job API */
-    public SKTaskRunState getState() { return runState; }
-    public String getIdent() { return j.getClass().getSimpleName(); }
-    public void setState(SKTaskRunState s) { runState = s; }
-    public long getPreviousRunTime() { return previousRunTime; }
-    public void setPreviousRunTime(long previousRunTime) { previousRunTime = previousRunTime; }
+    public SKTaskRunState getState() {
+        return runState;
+    }
+
+    public String getIdent() {
+        return underlyingTask.getClass().getSimpleName();
+    }
+
+    public synchronized void setState(SKTaskRunState s) {
+        runState = s;
+    }
+
+    public long getPreviousRunTime() {
+        return previousRunTime;
+    }
+
+    public void setPreviousRunTime(long previousRunTime) {
+        previousRunTime = previousRunTime;
+    }
+
     public long getTimesCompleted() { return timesCompleted; }
     public void incTimesCompleted() { timesCompleted += 1; }
     public long getTimesScheduled() { return timesScheduled; }
     public void incTimesScheduled() { timesScheduled += 1; }
     public long getTimesFailed() { return timesFailed; }
     public void incTimesFailed() { timesFailed += 1; }
+    public SKTask getUnderlyingTask() { return underlyingTask; }
 
 
-    public void execute() throws SKTaskException { j.execute(); }
-    public long getPeriodInMs() {
-        if (j.policy() instanceof SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy) {
-            return ((SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy) j.policy()).period();
-        } else {
-            return 0;
-        }
-    }
+    public void execute() throws SKTaskException { underlyingTask.execute(); }
 }

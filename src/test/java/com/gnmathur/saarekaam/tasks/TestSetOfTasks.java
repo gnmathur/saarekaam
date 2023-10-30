@@ -1,7 +1,7 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.*;
-import com.gnmathur.saarekaam.jobs.testtasks.simpleprinttest.*;
+import com.gnmathur.saarekaam.tasks.testtasks.simpleprinttest.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class TestSetOfTasks {
     public void testNormalCompletionOfASetOfTasks() throws InterruptedException {
         int iterationsToTestFor = 7;
 
-        SKTaskScheduler scheduler = SKTaskScheduler.getInstance();
+        SKTaskDispatcher dispatcher = new SKTaskDispatcher();
 
         // Create 6 SimplePrintTestTask tasks add them to the scheduler. Store the jobs in a list so that we can
         // check if they were executed at least `iterationsToTestFor` times.
@@ -22,12 +22,12 @@ public class TestSetOfTasks {
         for (int i = 1; i <= 20; i++) {
             SKTaskWrapper task = new SKTaskWrapper(new SimplePrintTestTask(i));
             tasks.add(task);
-            scheduler.schedule(task);
+            dispatcher.dispatch(task);
         }
 
-        Thread.sleep(tasks.get(0).getPeriodInMs() * iterationsToTestFor);
+        Thread.sleep(((SKTaskSchedulingPolicy.Periodic)tasks.get(0).getUnderlyingTask().policy()).period() * iterationsToTestFor);
 
-        scheduler.shutdown();
+        dispatcher.shutdown();
 
         // Check if all the jobs were executed at least iterationsToTestFor times
         for (SKTaskWrapper task : tasks) {

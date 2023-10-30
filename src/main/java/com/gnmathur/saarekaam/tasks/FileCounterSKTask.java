@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -49,7 +49,7 @@ public class FileCounterSKTask implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(10000);
+        return new SKTaskSchedulingPolicy.Periodic(10000);
     }
 
     public int countFiles(Path directory) {

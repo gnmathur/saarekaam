@@ -1,8 +1,9 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
-import com.gnmathur.saarekaam.core.SKTaskScheduler;
+import com.gnmathur.saarekaam.core.SKTaskDispatcher;
+import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
 import com.gnmathur.saarekaam.core.SKTaskWrapper;
-import com.gnmathur.saarekaam.jobs.testtasks.slowtasks.SlowPrintTestTask;
+import com.gnmathur.saarekaam.tasks.testtasks.slowtasks.SlowPrintTestTask;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,18 +13,19 @@ public class TestSlowTasks {
     @Test
     public void testSlowTasksAreNotOverscheduled() throws InterruptedException {
 
-        SKTaskScheduler s = SKTaskScheduler.getInstance();
+        SKTaskDispatcher d = new SKTaskDispatcher();
+
         SlowPrintTestTask t = new SlowPrintTestTask();
         SKTaskWrapper tw = new SKTaskWrapper(t);
-        s.schedule(tw);
+        d.dispatch(tw);
 
         int iterationsToTestFor = 8;
-        long taskExpectedToCompleteInMs = tw.getPeriodInMs() * iterationsToTestFor;
+        long taskExpectedToCompleteInMs = ((SKTaskSchedulingPolicy.Periodic)t.policy()).period() * iterationsToTestFor;
 
         // Wait for the task to complete
         Thread.sleep(taskExpectedToCompleteInMs);
 
-        s.shutdown();
+        d.shutdown();
 
         assertTrue(tw.getTimesCompleted() < taskExpectedToCompleteInMs/t.slowTaskTime + 1);
     }

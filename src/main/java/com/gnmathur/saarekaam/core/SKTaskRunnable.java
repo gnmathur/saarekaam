@@ -1,5 +1,6 @@
 package com.gnmathur.saarekaam.core;
 
+import com.gnmathur.saarekaam.core.schedulers.SKTaskScheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,12 +24,7 @@ public class SKTaskRunnable implements Runnable {
             jw.incTimesCompleted();
             jw.setPreviousRunTime(end);
 
-            if (end - start > jw.getPeriodInMs()) {
-                logger.warn(String.format("Task %s is taking longer to complete than its time period. Took %d ms", jw.getIdent(), (end - start)));
-                mc.lateJob();
-            } else {
-                logger.info(String.format("Task %s took %d ms", jw.getIdent(), (end - start)));
-            }
+            logger.info(String.format("Task %s completed successfully in %d ms", jw.getIdent(), end - start));
         } catch (SKTaskException e) {
             jw.setState(FAILED);
             jw.getTimesFailed();

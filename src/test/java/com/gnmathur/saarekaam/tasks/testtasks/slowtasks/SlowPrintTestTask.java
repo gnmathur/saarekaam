@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs.testtasks.slowtasks;
+package com.gnmathur.saarekaam.tasks.testtasks.slowtasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -21,6 +21,6 @@ public class SlowPrintTestTask implements SKTask {
     }
 
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(1000);
+        return new SKTaskSchedulingPolicy.Periodic(1000);
     }
 }

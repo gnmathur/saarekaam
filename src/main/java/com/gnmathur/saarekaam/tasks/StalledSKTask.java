@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.SKTask;
@@ -6,24 +6,22 @@ import com.gnmathur.saarekaam.core.SKTaskException;
 import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Random;
-
-public class SlowPrintSKTask implements SKTask {
-    private static Logger logger = SKLogger.getLogger(SlowPrintSKTask.class);
-    private static Random r = new Random();
+public class StalledSKTask implements SKTask {
+    // get the logger
+    private static Logger logger = SKLogger.getLogger(StalledSKTask.class);
 
     @Override
     public void execute() throws SKTaskException {
-        logger.info("A slow task..");
         try {
-            Thread.sleep(10_000);
+            logger.info("Starting a stalled task..");
+            Thread.sleep(Long.MAX_VALUE);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new SKTaskException(e);
         }
     }
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.PeriodicTaskSchedulingPolicy(5000);
+        return new SKTaskSchedulingPolicy.Periodic(120_000);
     }
 }

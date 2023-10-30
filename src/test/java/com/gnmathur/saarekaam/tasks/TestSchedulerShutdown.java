@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.jobs;
+package com.gnmathur.saarekaam.tasks;
 
 import org.junit.jupiter.api.Test;
 
