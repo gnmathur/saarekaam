@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core.schedulers;
+package com.gnmathur.saarekaam.core.scheduler;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import org.apache.logging.log4j.Logger;

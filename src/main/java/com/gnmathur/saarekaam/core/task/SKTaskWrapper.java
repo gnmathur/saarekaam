@@ -21,15 +21,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
+
+import java.util.UUID;
 
 /**
  * A wrapper for SKTask that holds the state of the task. This is used by the scheduler to keep track of the task.
  */
-public class SKTaskWrapper {
+public class SKTaskWrapper implements SKTaskMBean {
     private final SKTask underlyingTask;
+    private final String taskName;
 
-    public SKTaskWrapper(SKTask underlyingTask) { this.underlyingTask = underlyingTask; }
+    public SKTaskWrapper(SKTask underlyingTask) {
+        this.underlyingTask = underlyingTask;
+        this.taskName = underlyingTask.getClass().getSimpleName();
+    }
 
     /** Private job state */
     SKTaskRunState runState = SKTaskRunState.UNKNOWN;
@@ -37,6 +43,7 @@ public class SKTaskWrapper {
     private long timesScheduled = 0;
     private long timesCompleted = 0;
     private long timesFailed = 0;
+    private long timesCancelled = 0;
 
     /** Public job API */
     public SKTaskRunState getState() {
@@ -59,14 +66,90 @@ public class SKTaskWrapper {
         previousRunTime = previousRunTime;
     }
 
-    public long getTimesCompleted() { return timesCompleted; }
-    public void incTimesCompleted() { timesCompleted += 1; }
-    public long getTimesScheduled() { return timesScheduled; }
-    public void incTimesScheduled() { timesScheduled += 1; }
-    public long getTimesFailed() { return timesFailed; }
-    public void incTimesFailed() { timesFailed += 1; }
-    public SKTask getUnderlyingTask() { return underlyingTask; }
+    public long getTimesCompleted() {
+        return timesCompleted;
+    }
 
+    public void incTimesCompleted() {
+        timesCompleted += 1;
+    }
+
+    public long getTimesScheduled() {
+        return timesScheduled;
+    }
+
+    public void incTimesScheduled() {
+        timesScheduled += 1;
+    }
+
+    public long getTimesFailed() {
+        return timesFailed;
+    }
+
+    public void incTimesFailed() { timesFailed += 1; }
+
+    public SKTask getUnderlyingTask() {
+        return underlyingTask;
+    }
 
     public void execute() throws SKTaskException { underlyingTask.execute(); }
+
+    @Override
+    public String getTaskName() {
+        return taskName;
+    }
+
+    @Override
+    public String getTaskRunState() {
+        return runState.toString();
+    }
+
+    @Override
+    public long getTaskLastStartTime() {
+        return 0;
+    }
+
+    @Override
+    public long getTaskLastEndTime() {
+        return 0;
+    }
+
+    @Override
+    public long getTaskStartTime() {
+        return 0;
+    }
+
+    @Override
+    public long getTaskSuccessCount() {
+        return timesCompleted;
+    }
+
+    @Override
+    public long getTaskFailureCount() {
+        return timesFailed;
+    }
+
+    @Override
+    public long getTaskCancelCount() {
+        return timesCancelled;
+    }
+
+    @Override
+    public long getTaskRunCount() {
+        return 0;
+    }
+
+    @Override
+    public long getTaskRunTime() {
+        return 0;
+    }
+
+    @Override
+    public long getTaskAverageRunTime() {
+        return 0;
+    }
+
+    public SKTaskMBean getMBean() {
+        return this;
+    }
 }

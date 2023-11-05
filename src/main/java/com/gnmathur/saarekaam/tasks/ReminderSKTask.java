@@ -1,8 +1,8 @@
 package com.gnmathur.saarekaam.tasks;
 
-import com.gnmathur.saarekaam.core.SKTask;
-import com.gnmathur.saarekaam.core.SKTaskException;
-import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.task.SKTask;
+import com.gnmathur.saarekaam.core.task.SKTaskException;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -21,23 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-package com.gnmathur.saarekaam.core.schedulers;
+package com.gnmathur.saarekaam.core.scheduler;
 
-import com.gnmathur.saarekaam.core.*;
+import com.gnmathur.saarekaam.core.SKManager;
+import com.gnmathur.saarekaam.core.mgmt.SKMgmt;
+import com.gnmathur.saarekaam.core.task.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.concurrent.*;
 
-import static com.gnmathur.saarekaam.core.SKSchedulerPolicy.*;
+import static com.gnmathur.saarekaam.core.scheduler.SKSchedulerPolicy.*;
 
 /**
  * <p>
  *     This abstract class is the base class for all task schedulers. It provides the basic functionality for scheduling
  *     tasks. The actual scheduling is done by the concrete implementations of this class. Different Task schedulers can
  *     be used for different types of tasks. Task schedulers are registered with the dispatcher
- *     <code>{@link SKTaskDispatcher}</code> at startup.
+ *     <code>{@link SKManager}</code> at startup.
  *
  *     The scheduler uses <code>{@link ScheduledExecutorService}</code> to schedule tasks. The actual task
  *     implementation creates an underlying thread. That thread lifecycles is managed by a second executor
@@ -55,33 +58,29 @@ import static com.gnmathur.saarekaam.core.SKSchedulerPolicy.*;
  *
  * </p>
  *
- * @see SKTaskDispatcher
+ * @see SKManager
  * @see Executors#newScheduledThreadPool(int, ThreadFactory)
  * @see Executors#newCachedThreadPool(ThreadFactory)
  *
  * @author Gaurav Mathur
  */
-public abstract class SKTaskScheduler {
+public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
     protected static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
+    // Running jobs in the scheduler type
     protected LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
+    private final long startTime;
     protected final ScheduledExecutorService ste;
     protected final ExecutorService cte;
 
     /**
      * Create and initialize a scheduler.
-     * @return The scheduler
      */
-    public SKTaskScheduler() {
-        logger.info("Initializing task schedulers");
-
-        // Chose a scheduled thread pool for the scheduler. This is the core executor for managing the feature
-        // of periodic tasks.
-        ste = Executors.newScheduledThreadPool(MAX_CONCURRENT_JOBS, new SKThreadFactory("sthread"));
-        // Chose a cached thread pool for the cancelable task executor. This executor will be used to create another
-        // thread when the task gets scheduled to run. The advantage of this thread-in-a-thread approach is that
-        // the scheduler can now cancel the task if it is taking too long to complete. This will prevent the scheduler
-        // from getting blocked
-        cte = Executors.newCachedThreadPool(new SKThreadFactory("cthread"));
+    protected SKTaskScheduler(ScheduledExecutorService ste, ExecutorService cte) {
+        logger.info("Initializing task scheduler " + this.getClass().getSimpleName() + "...");
+        startTime = System.currentTimeMillis();
+        SKMgmt.registerMBean(this, Optional.of("scheduler"), Optional.of(this.getClass().getSimpleName()));
+        this.ste = ste;
+        this.cte = cte;
     }
 
     /**
@@ -109,41 +108,20 @@ public abstract class SKTaskScheduler {
             // Submit the job
             final Future<?> f = cte.submit(wtr);
 
+            wrappedTask.setState(SKTaskRunState.RUNNING);
+
             try {
                 f.get(JOB_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
                 wrappedTask.setState(SKTaskRunState.COMPLETED);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 f.cancel(true);
-                wrappedTask.setState(SKTaskRunState.FAILED);
-                logger.error(String.format("Task %s failed (err: %s)", wrappedTask.getIdent(), e.getMessage()));
+                wrappedTask.setState(SKTaskRunState.CANCELLED);
+                logger.error(String.format("Task %s cancelled because it timed out", wrappedTask.getIdent()));
             }
         };
         return taskRunnable;
     }
 
-    /**
-     * Shutdown the scheduler. This will wait for all tasks to complete or timeout (30s).
-     * If the tasks do not complete in 30s, they will be cancelled.
-     * If the scheduler is already shutdown, this method will do nothing.
-     */
-    public void shutdown() {
-        logger.info("Shutting down task scheduler. Will wait for all tasks to complete or timeout (30s)");
-
-        ste.shutdown();
-        cte.shutdown();
-
-        try {
-            if (!ste.awaitTermination(SHUTDOWN_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)) {
-                logger.info("Forcing shutdown...");
-                ste.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            // Try to shut down again
-            ste.shutdownNow();
-            // Preserve interrupt status so that calling code can also see it
-            Thread.currentThread().interrupt();
-        }
-    }
 
     /**
      * Add a task to the scheduler
@@ -165,10 +143,23 @@ public abstract class SKTaskScheduler {
         runningJob.put(taskIdent, f);
     }
 
+    @Override
+    public long getActiveCount() { return runningJob.size(); }
+
+    @Override
+    public long getStartTime() { return startTime; }
+
+    public SKTaskSchedulerMBean getSchedulerMBean() { return this; }
+
     /**
      * There are different types of schedulers. Each scheduler will have its own implementation of this method.
      *
      * @param taskWrapper
      */
     public abstract ScheduledFuture schedule(SKTaskWrapper taskWrapper);
+
+    /**
+     * Shutdown the scheduler. This will wait for all tasks to complete or timeout (30s).
+     */
+    public abstract void shutdown();
 }

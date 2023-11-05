@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.scheduler;
 
 public class SKSchedulerPolicy {
     // The maximum number of concurrent jobs that can be executed by the scheduler at any given time

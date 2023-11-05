@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
 
+import com.gnmathur.saarekaam.core.SKManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +43,7 @@ public class SKTaskLoader {
         return new SKTaskLoader();
     }
 
-    public void loadClassesFromJar(final String jarPath, final SKTaskDispatcher td) {
+    public void loadClassesFromJar(final String jarPath, final SKManager td) {
         logger.info("Loading classes from jar: " + jarPath);
 
         try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), (ClassLoader) null)) {
@@ -51,6 +52,7 @@ public class SKTaskLoader {
             Files.walk(fs.getPath("/"))
                     .filter(this::isMatchingClassPath)
                     .forEach(path -> processClassPath(path, classLoader, td));
+            classLoader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +71,7 @@ public class SKTaskLoader {
                 className.startsWith("com.gnmathur.saarekaam.tasks");
     }
 
-    private void processClassPath(final Path path, final URLClassLoader classLoader, final SKTaskDispatcher td) {
+    private void processClassPath(final Path path, final URLClassLoader classLoader, final SKManager td) {
         String className = path.toString().substring(1).replace("/", ".").replace(".class", "");
         try {
             Class<?> klass = Class.forName(className, true, classLoader);
@@ -80,7 +82,7 @@ public class SKTaskLoader {
         }
     }
 
-    private void instantiateAndSchedule(final Class<?> klass, final SKTaskDispatcher td) {
+    private void instantiateAndSchedule(final Class<?> klass, final SKManager td) {
         logger.debug("Checking {} is assignable from {} ({}) and is it an interface {} ({})",
                 klass.getName(),
                 SKTask.class.getName(),

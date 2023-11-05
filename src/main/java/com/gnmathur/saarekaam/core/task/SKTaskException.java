@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
 
 public class SKTaskException extends Exception {
     public SKTaskException(String message) {

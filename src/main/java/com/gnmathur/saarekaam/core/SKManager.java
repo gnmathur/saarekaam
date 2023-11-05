@@ -23,11 +23,15 @@ SOFTWARE.
 */
 package com.gnmathur.saarekaam.core;
 
-import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy.Cron;
-import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy.Periodic;
-import com.gnmathur.saarekaam.core.schedulers.SKTaskScheduler;
-import com.gnmathur.saarekaam.core.schedulers.SKTaskSchedulerCron;
-import com.gnmathur.saarekaam.core.schedulers.SKTaskSchedulerFixedRate;
+import com.gnmathur.saarekaam.core.scheduler.SKSchedulerExecutors;
+import com.gnmathur.saarekaam.core.task.SKTask;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy.Cron;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy.Periodic;
+import com.gnmathur.saarekaam.core.scheduler.SKTaskScheduler;
+import com.gnmathur.saarekaam.core.scheduler.SKTaskSchedulerCron;
+import com.gnmathur.saarekaam.core.scheduler.SKTaskSchedulerFixedRate;
+import com.gnmathur.saarekaam.core.task.SKTaskWrapper;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
@@ -35,23 +39,25 @@ import java.util.Map;
 
 /**
  * <p>
- *     This class is responsible for dispatching tasks to the appropriate scheduler. Task types are handled by
- *     specific schedulers.
+ *     This class manages the lifecycle of the scheduler. It is responsible for initializing the scheduler and
+ *     shutting it down. It also dispatches tasks to the scheduler.
  *
  *     Note: In the future we may consider creating singleton instances of the schedulers and registering them with
  *     more than one Task types.
+ *     </p>
  */
-public class SKTaskDispatcher {
-    private static final Logger logger = SKLogger.getLogger(SKTaskDispatcher.class);
-
+public class SKManager {
+    private static final Logger logger = SKLogger.getLogger(SKManager.class);
+    private final SKSchedulerExecutors schedulerExecutors;
     private final Map<Class<? extends SKTaskSchedulingPolicy>, SKTaskScheduler> schedulerMap;
 
 
-    public SKTaskDispatcher() {
+    public SKManager() {
         logger.info("Initializing the dispatcher");
         this.schedulerMap = new HashMap<>();
-        schedulerMap.put(Periodic.class, new SKTaskSchedulerFixedRate());
-        schedulerMap.put(Cron.class, new SKTaskSchedulerCron());
+        this.schedulerExecutors = new SKSchedulerExecutors();
+        schedulerMap.put(Periodic.class, new SKTaskSchedulerFixedRate(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
+        schedulerMap.put(Cron.class, new SKTaskSchedulerCron(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
     }
 
     public void dispatch(SKTaskWrapper taskWrapper) {
@@ -71,5 +77,6 @@ public class SKTaskDispatcher {
         logger.info("Shutting down the dispatcher");
 
         schedulerMap.values().forEach(SKTaskScheduler::shutdown);
+        schedulerExecutors.shutdown();
     }
 }

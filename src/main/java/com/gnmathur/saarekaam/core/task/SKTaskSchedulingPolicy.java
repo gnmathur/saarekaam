@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
 
 /**
  * A scheduling policy for a task. A task can be scheduled in one of the following ways:
