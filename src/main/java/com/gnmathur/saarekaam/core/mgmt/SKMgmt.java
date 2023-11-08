@@ -13,7 +13,7 @@ public class SKMgmt {
     }
 
     public static synchronized void registerMBean(Object mbean, Optional<String> name, Optional<String> type) {
-        var objectName = MGMT_DOMAIN + ":" + name.map(n -> "name=" + n).orElse("") + type.map(t -> ",type=" + t).orElse("");
+        var objectName = MGMT_DOMAIN + ":" + type.map(t -> "type=" + t).orElse("") + name.map(n -> ",name=" + n).orElse("");
         try {
             if (!mbs.isRegistered(new ObjectName(objectName))) {
                 mbs.registerMBean(mbean, new ObjectName(objectName));

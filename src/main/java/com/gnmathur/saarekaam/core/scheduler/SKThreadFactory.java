@@ -28,7 +28,7 @@ public final class SKThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable r) {
         final String threadName = String.format("%s-%d", tnp, ident.incrementAndGet());
-        logger.info("Creating new thread {}", threadName);
+        logger.debug("Creating new thread {}", threadName);
         return new Thread(r, threadName);
     }
 }

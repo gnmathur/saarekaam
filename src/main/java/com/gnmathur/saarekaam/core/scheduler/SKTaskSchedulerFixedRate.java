@@ -13,7 +13,7 @@ public class SKTaskSchedulerFixedRate extends SKTaskScheduler {
     @Override
     public ScheduledFuture schedule(SKTaskWrapper SKTaskWrapper) {
         // Get the task runnable
-        Runnable taskRunnable = createTaskRunnable(SKTaskWrapper);
+        Runnable taskRunnable = createCancellableTask(SKTaskWrapper);
 
         var ut = SKTaskWrapper.getUnderlyingTask();
         var p = ut.policy();

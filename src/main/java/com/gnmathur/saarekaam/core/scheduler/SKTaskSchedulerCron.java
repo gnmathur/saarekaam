@@ -13,7 +13,7 @@ public class SKTaskSchedulerCron extends SKTaskScheduler {
     @Override
     public ScheduledFuture schedule(SKTaskWrapper SKTaskWrapper) {
         // check if the job is already running and get the runnable
-        Runnable taskRunnable = createTaskRunnable(SKTaskWrapper);
+        Runnable taskRunnable = createCancellableTask(SKTaskWrapper);
 
         var ut = SKTaskWrapper.getUnderlyingTask();
         var p = ut.policy();

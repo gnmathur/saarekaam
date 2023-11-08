@@ -15,16 +15,18 @@ public class SKTaskRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            long start = System.currentTimeMillis();
-            jw.incTimesScheduled();
+            final long start = System.currentTimeMillis();
+            jw.markTaskScheduled(start);
+
             jw.execute();
-            long end = System.currentTimeMillis();
-            jw.incTimesCompleted();
-            jw.setPreviousRunTime(end);
+
+            final long end = System.currentTimeMillis();
+            jw.markTaskCompleted(end);
 
             logger.info(String.format("Task %s completed successfully in %d ms", jw.getIdent(), end - start));
         } catch (SKTaskException e) {
-            jw.incTimesFailed();
+            final long end = System.currentTimeMillis();
+            jw.markTaskFailed(end);
             logger.warn(String.format("Task %s failed (err: %s)", jw.getIdent(), e.getMessage()));
         }
     }

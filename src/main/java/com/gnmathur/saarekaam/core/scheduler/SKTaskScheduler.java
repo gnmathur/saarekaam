@@ -66,19 +66,27 @@ import static com.gnmathur.saarekaam.core.scheduler.SKSchedulerPolicy.*;
  */
 public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
     protected static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
+
     // Running jobs in the scheduler type
     protected LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
-    private final long startTime;
+
+    // Executors used
     protected final ScheduledExecutorService ste;
     protected final ExecutorService cte;
+
+    // Metrics
+    private final long startTime;
+    private long innerRunnableCount = 0L;
+    private long rescheduleAttemptCount = 0L;
+    private long exceptionCount = 0L;
 
     /**
      * Create and initialize a scheduler.
      */
-    protected SKTaskScheduler(ScheduledExecutorService ste, ExecutorService cte) {
+    protected SKTaskScheduler(final ScheduledExecutorService ste, final ExecutorService cte) {
         logger.info("Initializing task scheduler " + this.getClass().getSimpleName() + "...");
         startTime = System.currentTimeMillis();
-        SKMgmt.registerMBean(this, Optional.of("scheduler"), Optional.of(this.getClass().getSimpleName()));
+        SKMgmt.registerMBean(this, Optional.of(this.getClass().getSimpleName()), Optional.of("Scheduler"));
         this.ste = ste;
         this.cte = cte;
     }
@@ -89,7 +97,7 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
      * @param wrappedTask The job wrapper
      * @return A runnable for the job
      */
-    protected Runnable createTaskRunnable(SKTaskWrapper wrappedTask) {
+    protected Runnable createCancellableTask(final SKTaskWrapper wrappedTask) {
         final SKThreadFactory oneShotThreadFactory = new SKThreadFactory("task-thread");
 
         /* Create a runnable for the scheduled task. This runnable will be submitted to the
@@ -103,11 +111,12 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
          *
          */
         Runnable taskRunnable = () -> {
-            // A runnable for the wrapper task
+            // Wrapped Task Runnable - a runnable for the wrapped task that will be submitted to the cached thread pool
             final SKTaskRunnable wtr = new SKTaskRunnable(wrappedTask);
             // Submit the job
             final Future<?> f = cte.submit(wtr);
 
+            innerRunnableCount += 1;
             wrappedTask.setState(SKTaskRunState.RUNNING);
 
             try {
@@ -119,35 +128,49 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
                 logger.error(String.format("Task %s cancelled because it timed out", wrappedTask.getIdent()));
             }
         };
+
         return taskRunnable;
     }
 
 
     /**
-     * Add a task to the scheduler
+     * API used by the dispatcher to schedule a task. This method will call the concrete implementation of the
+     * scheduler to schedule the task.
      *
-     * @param SKTaskWrapper The task wrapper
+     * @param wrappedTask The task wrapper
      */
-    public void scheduleIt(SKTaskWrapper SKTaskWrapper) {
-        var taskIdent = SKTaskWrapper.getIdent();
+    public void scheduleIt(final SKTaskWrapper wrappedTask) {
+        var taskIdent = wrappedTask.getIdent();
 
-        logger.debug(String.format("Scheduling task %s", SKTaskWrapper.getIdent()));
+        logger.debug(String.format("Scheduling task %s", wrappedTask.getIdent()));
 
         // check if the job is already running
-        if (runningJob.containsKey(SKTaskWrapper.getClass().getName())) {
-            logger.info(String.format("Task %s is already running", SKTaskWrapper.getIdent()));
+        if (runningJob.containsKey(wrappedTask.getClass().getName())) {
+            logger.info(String.format("Task %s is already running", wrappedTask.getIdent()));
+            rescheduleAttemptCount += 1;
             return;
         }
 
-        var f = schedule(SKTaskWrapper);
+        var f = schedule(wrappedTask);
         runningJob.put(taskIdent, f);
     }
 
     @Override
-    public long getActiveCount() { return runningJob.size(); }
+    public long getActiveTasks() { return runningJob.size(); }
 
     @Override
-    public long getStartTime() { return startTime; }
+    public long getUpTime() { return System.currentTimeMillis() - startTime; }
+
+    @Override
+    public long getInnerRunnableCount() { return innerRunnableCount; }
+
+    @Override
+    public long getRescheduleAttempts() { return rescheduleAttemptCount; }
+
+    @Override
+    public long getExceptionCount() { return exceptionCount; }
+
+    public void incExceptionCount() { exceptionCount += 1; }
 
     public SKTaskSchedulerMBean getSchedulerMBean() { return this; }
 

@@ -23,82 +23,79 @@ SOFTWARE.
 */
 package com.gnmathur.saarekaam.core.task;
 
-import java.util.UUID;
+import com.gnmathur.saarekaam.core.mgmt.SKMgmt;
+
+import java.util.Optional;
 
 /**
  * A wrapper for SKTask that holds the state of the task. This is used by the scheduler to keep track of the task.
  */
-public class SKTaskWrapper implements SKTaskMBean {
+public class SKTaskWrapper implements SKTaskWrapperMBean {
     private final SKTask underlyingTask;
     private final String taskName;
 
     public SKTaskWrapper(SKTask underlyingTask) {
         this.underlyingTask = underlyingTask;
         this.taskName = underlyingTask.getClass().getSimpleName();
+        SKMgmt.registerMBean(this, Optional.of(this.taskName), Optional.of("Task"));
     }
 
-    /** Private job state */
-    SKTaskRunState runState = SKTaskRunState.UNKNOWN;
-    private long previousRunTime = System.currentTimeMillis();
-    private long timesScheduled = 0;
-    private long timesCompleted = 0;
-    private long timesFailed = 0;
-    private long timesCancelled = 0;
-
-    /** Public job API */
-    public SKTaskRunState getState() {
-        return runState;
-    }
-
+    /** Public API */
     public String getIdent() {
         return underlyingTask.getClass().getSimpleName();
     }
-
-    public synchronized void setState(SKTaskRunState s) {
-        runState = s;
-    }
-
-    public long getPreviousRunTime() {
-        return previousRunTime;
-    }
-
-    public void setPreviousRunTime(long previousRunTime) {
-        previousRunTime = previousRunTime;
-    }
-
-    public long getTimesCompleted() {
-        return timesCompleted;
-    }
-
-    public void incTimesCompleted() {
-        timesCompleted += 1;
-    }
-
-    public long getTimesScheduled() {
-        return timesScheduled;
-    }
-
-    public void incTimesScheduled() {
-        timesScheduled += 1;
-    }
-
-    public long getTimesFailed() {
-        return timesFailed;
-    }
-
-    public void incTimesFailed() { timesFailed += 1; }
 
     public SKTask getUnderlyingTask() {
         return underlyingTask;
     }
 
-    public void execute() throws SKTaskException { underlyingTask.execute(); }
-
-    @Override
-    public String getTaskName() {
-        return taskName;
+    public void execute() throws SKTaskException {
+        underlyingTask.execute();
     }
 
+    /** Private job state */
+    private SKTaskRunState runState = SKTaskRunState.UNKNOWN;
+    private long _startTime = 0L;
+    private long totalRunTime = 0L;
+    private long previousStartTime = 0L;
+    private long previousEndTime = 0L;
+    private long timesScheduled = 0;
+    private long timesCompleted = 0;
+    private long timesFailed = 0;
+    private long timesCancelled = 0;
+
+    /** State update methods */
+    public synchronized void setState(SKTaskRunState s) { runState = s; }
+    private void recordTaskTime(long startTime, long endTime) {
+        previousStartTime = startTime; previousEndTime = endTime;
+        totalRunTime += endTime - startTime;
+        _startTime = 0L;
+    }
+
+    public void markTaskScheduled(final long startTime) {
+        timesScheduled += 1;
+        _startTime = startTime;
+    }
+
+    public void markTaskCompleted(final long endTime) {
+        timesCompleted += 1;
+        recordTaskTime(_startTime, endTime);
+    }
+
+    public void markTaskCancelled(final long endTime) {
+        timesCancelled += 1;
+        recordTaskTime(_startTime, endTime);
+    }
+
+    public void markTaskFailed(final long endTime) {
+        timesFailed += 1;
+        recordTaskTime(_startTime, endTime);
+    }
+
+    /** State query methods */
+    public long getTimesCompleted() { return timesCompleted; }
+
+    /** MBean methods */
     @Override
     public String getTaskRunState() {
         return runState.toString();
@@ -106,17 +103,12 @@ public class SKTaskWrapper implements SKTaskMBean {
 
     @Override
     public long getTaskLastStartTime() {
-        return 0;
+        return previousStartTime;
     }
 
     @Override
     public long getTaskLastEndTime() {
-        return 0;
-    }
-
-    @Override
-    public long getTaskStartTime() {
-        return 0;
+        return previousEndTime;
     }
 
     @Override
@@ -136,20 +128,11 @@ public class SKTaskWrapper implements SKTaskMBean {
 
     @Override
     public long getTaskRunCount() {
-        return 0;
+        return timesScheduled;
     }
 
     @Override
-    public long getTaskRunTime() {
-        return 0;
-    }
-
-    @Override
-    public long getTaskAverageRunTime() {
-        return 0;
-    }
-
-    public SKTaskMBean getMBean() {
-        return this;
+    public long getTaskTotalRunTime() {
+        return totalRunTime;
     }
 }
