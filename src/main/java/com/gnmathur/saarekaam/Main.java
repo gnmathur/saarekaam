@@ -23,8 +23,8 @@ SOFTWARE.
 */
 package com.gnmathur.saarekaam;
 
-import com.gnmathur.saarekaam.core.SKTaskDispatcher;
-import com.gnmathur.saarekaam.core.SKTaskLoader;
+import com.gnmathur.saarekaam.core.SKManager;
+import com.gnmathur.saarekaam.core.task.SKTaskLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +39,7 @@ public class Main {
             System.exit(1);
         }
 
-        SKTaskDispatcher td = new SKTaskDispatcher();
+        SKManager td = new SKManager();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 System.out.println("Shutting down...\n");

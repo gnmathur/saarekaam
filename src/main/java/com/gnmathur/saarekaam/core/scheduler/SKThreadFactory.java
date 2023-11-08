@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core.schedulers;
+package com.gnmathur.saarekaam.core.scheduler;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ public final class SKThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable r) {
         final String threadName = String.format("%s-%d", tnp, ident.incrementAndGet());
-        logger.info("Creating new thread {}", threadName);
+        logger.debug("Creating new thread {}", threadName);
         return new Thread(r, threadName);
     }
 }

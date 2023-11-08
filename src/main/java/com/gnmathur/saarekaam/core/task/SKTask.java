@@ -1,4 +1,4 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
 
 public interface SKTask {
     /** To be implemented by the job definition */

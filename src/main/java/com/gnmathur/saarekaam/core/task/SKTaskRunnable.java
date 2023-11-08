@@ -1,10 +1,9 @@
-package com.gnmathur.saarekaam.core;
+package com.gnmathur.saarekaam.core.task;
 
-import com.gnmathur.saarekaam.core.schedulers.SKTaskScheduler;
+import com.gnmathur.saarekaam.core.SKMetricsCollector;
+import com.gnmathur.saarekaam.core.scheduler.SKTaskScheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static com.gnmathur.saarekaam.core.SKTaskRunState.*;
 
 public class SKTaskRunnable implements Runnable {
     private static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
@@ -16,18 +15,18 @@ public class SKTaskRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            long start = System.currentTimeMillis();
-            jw.incTimesScheduled();
+            final long start = System.currentTimeMillis();
+            jw.markTaskScheduled(start);
+
             jw.execute();
-            long end = System.currentTimeMillis();
-            jw.setState(COMPLETED);
-            jw.incTimesCompleted();
-            jw.setPreviousRunTime(end);
+
+            final long end = System.currentTimeMillis();
+            jw.markTaskCompleted(end);
 
             logger.info(String.format("Task %s completed successfully in %d ms", jw.getIdent(), end - start));
         } catch (SKTaskException e) {
-            jw.setState(FAILED);
-            jw.getTimesFailed();
+            final long end = System.currentTimeMillis();
+            jw.markTaskFailed(end);
             logger.warn(String.format("Task %s failed (err: %s)", jw.getIdent(), e.getMessage()));
         }
     }

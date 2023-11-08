@@ -1,8 +1,8 @@
 package com.gnmathur.saarekaam.tasks;
 
-import com.gnmathur.saarekaam.core.SKTaskDispatcher;
-import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
-import com.gnmathur.saarekaam.core.SKTaskWrapper;
+import com.gnmathur.saarekaam.core.SKManager;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.task.SKTaskWrapper;
 import com.gnmathur.saarekaam.tasks.testtasks.slowtasks.SlowPrintTestTask;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class TestSlowTasks {
     @Test
     public void testSlowTasksAreNotOverscheduled() throws InterruptedException {
 
-        SKTaskDispatcher d = new SKTaskDispatcher();
+        SKManager d = new SKManager();
 
         SlowPrintTestTask t = new SlowPrintTestTask();
         SKTaskWrapper tw = new SKTaskWrapper(t);

@@ -1,16 +1,19 @@
-package com.gnmathur.saarekaam.core.schedulers;
+package com.gnmathur.saarekaam.core.scheduler;
 
-import com.gnmathur.saarekaam.core.SKCron;
-import com.gnmathur.saarekaam.core.SKTaskSchedulingPolicy;
-import com.gnmathur.saarekaam.core.SKTaskWrapper;
+import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
+import com.gnmathur.saarekaam.core.task.SKTaskWrapper;
 
 import java.util.concurrent.*;
 
 public class SKTaskSchedulerCron extends SKTaskScheduler {
+    public SKTaskSchedulerCron(ScheduledExecutorService ste, ExecutorService cte) {
+        super(ste, cte);
+    }
+
     @Override
     public ScheduledFuture schedule(SKTaskWrapper SKTaskWrapper) {
         // check if the job is already running and get the runnable
-        Runnable taskRunnable = createTaskRunnable(SKTaskWrapper);
+        Runnable taskRunnable = createCancellableTask(SKTaskWrapper);
 
         var ut = SKTaskWrapper.getUnderlyingTask();
         var p = ut.policy();
@@ -32,5 +35,10 @@ public class SKTaskSchedulerCron extends SKTaskScheduler {
                 TimeUnit.MILLISECONDS);
 
         return f;
+    }
+
+    @Override
+    public void shutdown() {
+
     }
 }
