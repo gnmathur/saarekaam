@@ -2,7 +2,6 @@ package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.task.SKTask;
-import com.gnmathur.saarekaam.core.task.SKTaskException;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +32,7 @@ public class FileCounterSKTask implements SKTask {
             "/usr/local/lib");
     static Random rand = new Random();
     @Override
-    public void execute() throws SKTaskException {
+    public void execute() {
         logger.info("Starting FileCounter task");
         String dir = dirs.get(rand.nextInt(dirs.size()));
         Path directoryPath = Paths.get(dir);

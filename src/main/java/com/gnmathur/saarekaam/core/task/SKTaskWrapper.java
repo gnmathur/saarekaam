@@ -49,7 +49,8 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
         return underlyingTask;
     }
 
-    public void execute() throws SKTaskException {
+    /** Delegates to the underlying task */
+    public void execute() {
         underlyingTask.execute();
     }
 
@@ -82,9 +83,12 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
         recordTaskTime(_startTime, endTime);
     }
 
-    public void markTaskCancelled(final long endTime) {
+    /**
+     * Note: We do not record the time for cancelled tasks. This is because a cancelled task will eventually be marked
+     * as either having completed successfully or failed. We will record the time then.
+     */
+    public void markTaskCancelled() {
         timesCancelled += 1;
-        recordTaskTime(_startTime, endTime);
     }
 
     public void markTaskFailed(final long endTime) {

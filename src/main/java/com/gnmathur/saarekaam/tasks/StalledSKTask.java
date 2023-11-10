@@ -2,7 +2,6 @@ package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.task.SKTask;
-import com.gnmathur.saarekaam.core.task.SKTaskException;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
@@ -11,12 +10,12 @@ public class StalledSKTask implements SKTask {
     private static Logger logger = SKLogger.getLogger(StalledSKTask.class);
 
     @Override
-    public void execute() throws SKTaskException {
-        try {
+    public void execute() {
             logger.info("Starting a stalled task..");
+        try {
             Thread.sleep(Long.MAX_VALUE);
         } catch (InterruptedException e) {
-            throw new SKTaskException(e);
+            throw new RuntimeException(e);
         }
     }
 
