@@ -16,7 +16,7 @@ public class CronPrinterTaskEveryHour implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        // Every 7th minute
+        // Run every hour
         return new SKTaskSchedulingPolicy.Cron("0 * * * *");
     }
 

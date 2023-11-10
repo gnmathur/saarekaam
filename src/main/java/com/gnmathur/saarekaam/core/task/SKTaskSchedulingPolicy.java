@@ -23,6 +23,6 @@ public sealed interface SKTaskSchedulingPolicy permits
     // Cron: The task will be executed at a fixed time of the day. The cron expression is in the UNIX cron format
     record Cron(String cronExpression) implements SKTaskSchedulingPolicy { }
     // FixedNumberOfTimes: The task will be executed a fixed number of times
-    record FixedNumberOfTimes(int times) implements SKTaskSchedulingPolicy { }
+    record FixedNumberOfTimes(int times, int delayBetweenInvocations) implements SKTaskSchedulingPolicy { }
 }
 

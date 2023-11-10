@@ -6,7 +6,7 @@ import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import com.gnmathur.saarekaam.tasks.PGQueryTaskA;
 import org.apache.logging.log4j.Logger;
 
-public class CronPrinterTaskEveryTwoDayAt1005AM implements SKTask {
+public class CronPrinterTaskEveryTwoDayAt1145AM implements SKTask {
     private static final Logger logger = SKLogger.getLogger(PGQueryTaskA.class);
 
     @Override
@@ -16,8 +16,7 @@ public class CronPrinterTaskEveryTwoDayAt1005AM implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        //
-        return new SKTaskSchedulingPolicy.Cron("5 17 */2 * *");
+        return new SKTaskSchedulingPolicy.Cron("45 11 */2 * *");
     }
 
     @Override

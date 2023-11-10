@@ -6,18 +6,18 @@ import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import com.gnmathur.saarekaam.tasks.PGQueryTaskA;
 import org.apache.logging.log4j.Logger;
 
-public class CronPrinterTaskEveryDayAt10PM implements SKTask {
+public class CronPrinterTaskEveryDayAt1030PM implements SKTask {
     private static final Logger logger = SKLogger.getLogger(PGQueryTaskA.class);
 
     @Override
     public void execute() {
-        logger.info("Everyday 10 PM task executed");
+        logger.info("Everyday 10:30 PM task executed");
     }
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        // Every minute
-        return new SKTaskSchedulingPolicy.Cron("0 22 * * *");
+        // Run every day at 10:30 PM local time
+        return new SKTaskSchedulingPolicy.Cron("30 22 * * *");
     }
 
     @Override

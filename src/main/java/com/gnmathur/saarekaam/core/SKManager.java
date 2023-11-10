@@ -23,14 +23,11 @@ SOFTWARE.
 */
 package com.gnmathur.saarekaam.core;
 
-import com.gnmathur.saarekaam.core.scheduler.SKSchedulerExecutors;
+import com.gnmathur.saarekaam.core.scheduler.*;
 import com.gnmathur.saarekaam.core.task.SKTask;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy.Cron;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy.Periodic;
-import com.gnmathur.saarekaam.core.scheduler.SKTaskScheduler;
-import com.gnmathur.saarekaam.core.scheduler.SKTaskSchedulerCron;
-import com.gnmathur.saarekaam.core.scheduler.SKTaskSchedulerFixedRate;
 import com.gnmathur.saarekaam.core.task.SKTaskWrapper;
 import org.apache.logging.log4j.Logger;
 
@@ -54,10 +51,19 @@ public class SKManager {
 
     public SKManager() {
         logger.info("Initializing the dispatcher");
+
         this.schedulerMap = new HashMap<>();
         this.schedulerExecutors = new SKSchedulerExecutors();
-        schedulerMap.put(Periodic.class, new SKTaskSchedulerFixedRate(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
-        schedulerMap.put(Cron.class, new SKTaskSchedulerCron(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
+
+        schedulerMap.put(
+                Periodic.class,
+                new SKTaskSchedulerFixedRate(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
+        schedulerMap.put(
+                Cron.class,
+                new SKTaskSchedulerCron(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
+        schedulerMap.put(
+                SKTaskSchedulingPolicy.FixedNumberOfTimes.class,
+                new SKTaskSchedulerFixedNumber(schedulerExecutors.getSte(), schedulerExecutors.getCte()));
     }
 
     public void dispatch(SKTaskWrapper taskWrapper) {
