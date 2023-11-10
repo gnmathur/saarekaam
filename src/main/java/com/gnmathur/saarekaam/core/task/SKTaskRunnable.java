@@ -24,7 +24,7 @@ public class SKTaskRunnable implements Runnable {
             jw.markTaskCompleted(end);
 
             logger.info(String.format("Task %s completed successfully in %d ms", jw.getIdent(), end - start));
-        } catch (SKTaskException e) {
+        } catch (Exception e) {
             final long end = System.currentTimeMillis();
             jw.markTaskFailed(end);
             logger.warn(String.format("Task %s failed (err: %s)", jw.getIdent(), e.getMessage()));

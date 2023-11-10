@@ -100,15 +100,14 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
     protected Runnable createCancellableTask(final SKTaskWrapper wrappedTask) {
         final SKThreadFactory oneShotThreadFactory = new SKThreadFactory("task-thread");
 
-        /* Create a runnable for the scheduled task. This runnable will be submitted to the
-         * scheduler. The scheduler will create a thread for this runnable and execute it.
-         * The runnable will create a single thread executor and submit the job to it. This
-         * will ensure that the job is executed in a separate thread. The runnable will wait
-         * for the job to complete or timeout (30s). If the job does not complete in 30s, it
-         * will be cancelled. The advantage of this approach is that the scheduler now has
-         * the ability to cancel the job if it is taking too long to complete. This will
-         * prevent the scheduler from getting blocked.
+        /**
+         *  Create a runnable for the scheduled task. The runnable will create a single thread executor and submit the
+         *  job to it. This will ensure that the job is executed in a separate thread. The runnable will wait
+         * for the job to complete or timeout (30s). If the job does not complete in 30s, it will be cancelled. The
+         * advantage of this approach is that the scheduler now has the ability to cancel the job if it is taking too
+         * long to complete. This will prevent the scheduler from getting blocked.
          *
+         * Note: This approach will not work if the job is CPU bound and is therefore not "interruptable".
          */
         Runnable taskRunnable = () -> {
             // Wrapped Task Runnable - a runnable for the wrapped task that will be submitted to the cached thread pool
@@ -125,6 +124,7 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 f.cancel(true);
                 wrappedTask.setState(SKTaskRunState.CANCELLED);
+                wrappedTask.markTaskCancelled();
                 logger.error(String.format("Task %s cancelled because it timed out", wrappedTask.getIdent()));
             }
         };

@@ -4,7 +4,7 @@ public interface SKTask {
     /** To be implemented by the job definition */
 
     /* Job definition */
-    void execute() throws SKTaskException;
+    void execute();
 
     /* Get the job period in milliseconds */
     SKTaskSchedulingPolicy policy();

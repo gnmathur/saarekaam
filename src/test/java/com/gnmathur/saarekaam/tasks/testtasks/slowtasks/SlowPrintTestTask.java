@@ -2,7 +2,6 @@ package com.gnmathur.saarekaam.tasks.testtasks.slowtasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.task.SKTask;
-import com.gnmathur.saarekaam.core.task.SKTaskException;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +10,7 @@ public class SlowPrintTestTask implements SKTask {
     public int slowTaskTime = 2_000; // 2 seconds in ms
 
     @Override
-    public void execute() throws SKTaskException {
+    public void execute() {
         logger.info("A slow task..");
         try {
             Thread.sleep(slowTaskTime);

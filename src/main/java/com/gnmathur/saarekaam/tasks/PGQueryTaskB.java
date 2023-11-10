@@ -2,7 +2,6 @@ package com.gnmathur.saarekaam.tasks;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.task.SKTask;
-import com.gnmathur.saarekaam.core.task.SKTaskException;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
@@ -15,7 +14,7 @@ public class PGQueryTaskB implements SKTask {
     private static final Logger logger = SKLogger.getLogger(PGQueryTaskB.class);
 
     @Override
-    public void execute() throws SKTaskException {
+    public void execute() {
         String jdbcUrl = "jdbc:postgresql://192.168.52.194:5432/dvdrental";
         String username = "postgres";
         String password = "postgres";

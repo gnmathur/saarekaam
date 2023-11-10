@@ -2,7 +2,6 @@ package com.gnmathur.saarekaam.tasks.testtasks.simpleprinttest;
 
 import com.gnmathur.saarekaam.core.SKLogger;
 import com.gnmathur.saarekaam.core.task.SKTask;
-import com.gnmathur.saarekaam.core.task.SKTaskException;
 import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +16,7 @@ public class SimplePrintTestTask implements SKTask {
     }
 
     @Override
-    public void execute() throws SKTaskException {
+    public void execute() {
         logger.info("SimplePrintTestTask" + ident + " executed at: " + System.currentTimeMillis());
     }
 
