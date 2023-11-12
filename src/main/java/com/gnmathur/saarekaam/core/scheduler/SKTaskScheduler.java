@@ -67,8 +67,8 @@ import static com.gnmathur.saarekaam.core.scheduler.SKSchedulerPolicy.*;
 public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
     protected static final Logger logger = LogManager.getLogger(SKTaskScheduler.class);
 
-    // Running jobs in the scheduler type
-    protected LinkedHashMap<String, ScheduledFuture<?>> runningJob = new LinkedHashMap<>();
+    // Tasks registered with the scheduler
+    protected LinkedHashMap<String, ScheduledFuture<?>> registeredTasks = new LinkedHashMap<>();
 
     // Executors used
     protected final ScheduledExecutorService ste;
@@ -98,8 +98,6 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
      * @return A runnable for the job
      */
     protected Runnable createCancellableTask(final SKTaskWrapper wrappedTask) {
-        final SKThreadFactory oneShotThreadFactory = new SKThreadFactory("task-thread");
-
         /**
          *  Create a runnable for the scheduled task. The runnable will create a single thread executor and submit the
          *  job to it. This will ensure that the job is executed in a separate thread. The runnable will wait
@@ -116,19 +114,18 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
             final Future<?> f = cte.submit(wtr);
 
             innerRunnableCount += 1;
-            wrappedTask.setState(SKTaskRunState.RUNNING);
 
             try {
                 f.get(JOB_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
-                wrappedTask.setState(SKTaskRunState.COMPLETED);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                // Allow cancellable tasks to be cancelled. Cancelled tasks can still complete successfully.
                 f.cancel(true);
-                wrappedTask.setState(SKTaskRunState.CANCELLED);
                 wrappedTask.markTaskCancelled();
                 logger.error(String.format("Task %s cancelled because it timed out", wrappedTask.getIdent()));
             }
         };
 
+        wrappedTask.markTaskScheduled();
         return taskRunnable;
     }
 
@@ -145,18 +142,18 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
         logger.debug(String.format("Scheduling task %s", wrappedTask.getIdent()));
 
         // check if the job is already running
-        if (runningJob.containsKey(wrappedTask.getClass().getName())) {
+        if (registeredTasks.containsKey(wrappedTask.getClass().getName())) {
             logger.info(String.format("Task %s is already running", wrappedTask.getIdent()));
             rescheduleAttemptCount += 1;
             return;
         }
 
         var f = schedule(wrappedTask);
-        runningJob.put(taskIdent, f);
+        registeredTasks.put(taskIdent, f);
     }
 
     @Override
-    public long getActiveTasks() { return runningJob.size(); }
+    public long getRegisteredTasks() { return registeredTasks.size(); }
 
     @Override
     public long getUpTime() { return System.currentTimeMillis() - startTime; }

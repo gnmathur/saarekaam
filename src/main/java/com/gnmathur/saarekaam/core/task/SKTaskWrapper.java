@@ -28,7 +28,12 @@ import com.gnmathur.saarekaam.core.mgmt.SKMgmt;
 import java.util.Optional;
 
 /**
- * A wrapper for SKTask that holds the state of the task. This is used by the scheduler to keep track of the task.
+ * A wrapper for SKTask that holds the state of the task. This is used by the scheduler to keep track of the task. Task
+ * state is being updated from two places -
+ * 1. The scheduler {@code SKTaskScheduler} that is responsible for scheduling the task. This thread updates the state
+ * of the task when it is scheduled, or when it is cancelled by the scheduler
+ * 2. The task thread {@code SKTaskRunnable}  that is responsible for executing the task. This thread updates the state
+ * of the task when itis running, completes successfully or fails
  */
 public class SKTaskWrapper implements SKTaskWrapperMBean {
     private final SKTask underlyingTask;
@@ -61,6 +66,7 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
     private long previousStartTime = 0L;
     private long previousEndTime = 0L;
     private long timesScheduled = 0;
+    private long timesRunning = 0;
     private long timesCompleted = 0;
     private long timesFailed = 0;
     private long timesCancelled = 0;
@@ -73,14 +79,22 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
         _startTime = 0L;
     }
 
-    public void markTaskScheduled(final long startTime) {
-        timesScheduled += 1;
+    public void markTaskRunning() {
+        setState(SKTaskRunState.RUNNING);
+        timesRunning += 1;
+        var startTime = System.currentTimeMillis();
         _startTime = startTime;
     }
 
-    public void markTaskCompleted(final long endTime) {
+    public void markTaskScheduled() {
+        timesScheduled += 1;
+    }
+
+    public void markTaskCompleted() {
         timesCompleted += 1;
+        var endTime = System.currentTimeMillis();
         recordTaskTime(_startTime, endTime);
+        setState(SKTaskRunState.COMPLETED);
     }
 
     /**
@@ -89,11 +103,14 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
      */
     public void markTaskCancelled() {
         timesCancelled += 1;
+        setState(SKTaskRunState.CANCELLED);
     }
 
-    public void markTaskFailed(final long endTime) {
+    public void markTaskFailed() {
         timesFailed += 1;
+        var endTime = System.currentTimeMillis();
         recordTaskTime(_startTime, endTime);
+        setState(SKTaskRunState.FAILED);
     }
 
     /** State query methods */
@@ -132,8 +149,11 @@ public class SKTaskWrapper implements SKTaskWrapperMBean {
 
     @Override
     public long getTaskRunCount() {
-        return timesScheduled;
+        return timesRunning;
     }
+
+    @Override
+    public long getTaskScheduledCount() { return timesScheduled; }
 
     @Override
     public long getTaskTotalRunTime() {

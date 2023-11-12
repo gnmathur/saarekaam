@@ -15,6 +15,32 @@ scheduling.
 2. Tasks are provided to the scheduler as a jar file at startup
 3. Identifying long-running tasks and terminating them after a configurable timeout
 
+### Implementation details
+#### Task
+The following task types are supported:
+##### Cancellable task
+A cancellable task is a task that can be cancelled by the scheduler. The task is expected to implement the
+`CancellableTask` interface. The interface has a single method `cancel()`. The task is expected to implement the
+`cancel()` method to gracefully terminate the task. The task is expected to check for the `isCancelled()` method
+periodically and terminate itself if the method returns `true`. The `isCancelled()` method is provided by the
+scheduler. The scheduler will call the `cancel()` method if the task is running for longer than the configured timeout.
+
+##### Non-cancellable task
+A non-cancellable task is a task that cannot be cancelled by the scheduler. The task is expected to implement the
+`NonCancellableTask` interface. The interface has a single method `run()`.
+
+Its highly recommended that the tasks implement the `CancellableTask` interface. The scheduler will terminate the
+tasks that are running for longer than the configured timeout. The cancellable type offers the task a
+handy API to check if the task has been cancelled and terminate itself gracefully. This allows it to be a _better
+citizen_ in the scheduler ecosystem.
+
+Note that the scheduler will try to terminate the UnCancellable tasks as well if they are running for longer than the
+configured timeout. However, since the task does not implement the `CancellableTask` interface, the task
+will receive no notification from the scheduler. The task will be terminated abruptly in case it was sleeping or
+waiting for some other task to complete. This can lead to data corruption or other undesirable side effects. Hence, it
+is highly recommended that the tasks implement the `CancellableTask` interface and check for the `isCancelled()`
+method periodically.
+
 ## Running the scheduler
 ### Prerequisites
 1. Java 17

@@ -4,7 +4,7 @@ public interface SKTaskSchedulerMBean {
     /**
      * @return the number of tasks that are currently running for this scheduler
      */
-    public long getActiveTasks();
+    public long getRegisteredTasks();
 
     /**
      * @return the number of milliseconds since this scheduler was started

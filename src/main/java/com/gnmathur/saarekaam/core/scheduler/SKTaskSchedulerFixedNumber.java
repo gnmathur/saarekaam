@@ -39,7 +39,7 @@ public class SKTaskSchedulerFixedNumber extends  SKTaskScheduler {
 
         final ScheduledFuture<?> f = ste.schedule(
                 rescheduleWrapper,
-                ((SKTaskSchedulingPolicy.FixedNumberOfTimes) p).delayBetweenInvocations(),
+                0,
                 TimeUnit.MILLISECONDS);
 
         return f;

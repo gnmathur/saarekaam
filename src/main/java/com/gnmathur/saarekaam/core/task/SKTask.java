@@ -13,4 +13,8 @@ public interface SKTask {
     default Object context() {
         return null;
     }
+
+    default boolean isCancelled() {
+        return Thread.currentThread().isInterrupted();
+    }
 }

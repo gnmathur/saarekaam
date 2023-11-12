@@ -37,6 +37,8 @@ public interface SKTaskWrapperMBean {
      */
     public long getTaskRunCount();
 
+    public long getTaskScheduledCount();
+
     /**
      * Returns the total time this task has run in milliseconds. This includes the time spent in failed, cancelled and
      * successful runs.
