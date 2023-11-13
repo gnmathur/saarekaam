@@ -17,7 +17,7 @@ public class LargeDownloadSKTask implements SKTask {
     @Override
     public void execute() {
         logger.info("Downloading a large file from OpenLibrary");
-
+        /*
         try {
             // URL url = new URL("https://openlibrary.org/data/ol_dump_ratings_latest.txt.gz");
             URL url = new URL("https://openlibrary.org/data/ol_dump_works_latest.txt.gz");
@@ -50,16 +50,13 @@ public class LargeDownloadSKTask implements SKTask {
 
             throw new RuntimeException(e);
         }
+
+         */
     }
 
     @Override
     public SKTaskSchedulingPolicy policy() {
         //return new SKTaskSchedulingPolicy.Periodic(30 * 60 * 1000);
         return new SKTaskSchedulingPolicy.FixedNumberOfTimes(17, 1 * 60 * 60 * 1000);
-    }
-
-    @Override
-    public Object context() {
-        return null;
     }
 }

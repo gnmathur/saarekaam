@@ -117,11 +117,17 @@ public abstract class SKTaskScheduler implements SKTaskSchedulerMBean {
 
             try {
                 f.get(JOB_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                // Allow cancellable tasks to be cancelled. Cancelled tasks can still complete successfully.
+
+                logger.info(String.format("Task %s completed successfully in %d ms", wrappedTask.getIdent(), wrappedTask.getTaskTotalRunTime()));
+            } catch (TimeoutException e) {
+                // Try cancelling a task. Cancelled tasks can still complete successfully.
                 f.cancel(true);
                 wrappedTask.markTaskCancelled();
                 logger.error(String.format("Task %s cancelled because it timed out", wrappedTask.getIdent()));
+            } catch (InterruptedException | ExecutionException e) {
+                // We should never get here because the SKTaskRunnable will catch all exceptions and mark the task as
+                // failed
+                assert false;
             }
         };
 
