@@ -6,7 +6,6 @@ import com.gnmathur.saarekaam.core.task.SKTaskSchedulingPolicy;
 import org.apache.logging.log4j.Logger;
 
 public class StalledSKTask implements SKTask {
-    // get the logger
     private static Logger logger = SKLogger.getLogger(StalledSKTask.class);
 
     @Override
@@ -21,6 +20,7 @@ public class StalledSKTask implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.Periodic(120_000);
+        // Run every 10 minutes
+        return new SKTaskSchedulingPolicy.Periodic(600_000);
     }
 }

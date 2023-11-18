@@ -7,7 +7,7 @@ import com.gnmathur.saarekaam.tasks.PGQueryTaskA;
 import org.apache.logging.log4j.Logger;
 
 public class CronPrinterTaskEveryHour implements SKTask {
-    private static final Logger logger = SKLogger.getLogger(PGQueryTaskA.class);
+    private static final Logger logger = SKLogger.getLogger(CronPrinterTaskEveryHour.class);
 
     @Override
     public void execute() {
@@ -16,12 +16,7 @@ public class CronPrinterTaskEveryHour implements SKTask {
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        // Every 7th minute
+        // Run every hour
         return new SKTaskSchedulingPolicy.Cron("0 * * * *");
-    }
-
-    @Override
-    public Object context() {
-        return SKTask.super.context();
     }
 }

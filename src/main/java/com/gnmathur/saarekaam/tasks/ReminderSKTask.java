@@ -7,14 +7,18 @@ import org.apache.logging.log4j.Logger;
 
 public class ReminderSKTask implements SKTask {
     private static Logger logger = LogManager.getLogger(ReminderSKTask.class);
+    private long times = 0L;
 
     @Override
     public void execute() {
-        logger.info("Hello world! from PrintTask");
+        times++;
+
+        logger.info("ReminderSKTask executed at: " + System.currentTimeMillis() + " times: " + times);
     }
 
     @Override
     public SKTaskSchedulingPolicy policy() {
-        return new SKTaskSchedulingPolicy.FixedNumberOfTimes(7);
+        // Run every 30 seconds, 163 times
+        return new SKTaskSchedulingPolicy.FixedNumberOfTimes(163, 30_000);
     }
 }
