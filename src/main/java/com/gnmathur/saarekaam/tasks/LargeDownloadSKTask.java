@@ -17,7 +17,6 @@ public class LargeDownloadSKTask implements SKTask {
     @Override
     public void execute() {
         logger.info("Downloading a large file from OpenLibrary");
-        /*
         try {
             // URL url = new URL("https://openlibrary.org/data/ol_dump_ratings_latest.txt.gz");
             URL url = new URL("https://openlibrary.org/data/ol_dump_works_latest.txt.gz");
@@ -40,7 +39,7 @@ public class LargeDownloadSKTask implements SKTask {
                 // close
                 fos.close();
                 bis.close();
-
+                httpURLConnection.disconnect();
             } else {
                 logger.warn("Response code is not OK");
             }
@@ -50,8 +49,6 @@ public class LargeDownloadSKTask implements SKTask {
 
             throw new RuntimeException(e);
         }
-
-         */
     }
 
     @Override
